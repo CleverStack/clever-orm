@@ -25,5 +25,12 @@
   "main": "module.js",
   "devDependencies": {
 
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CleverStack/clever-orm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CleverStack/clever-orm/pulls"
   }
 }
