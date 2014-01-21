@@ -16,11 +16,12 @@
   "description": "Clevertech ORM (SQL) Module for CleverStack",
   "keywords": [
     "cleverstack",
+    "cleverstack-module",
     "cleverstack-backend",
     "orm",
     "sequelize",
     "clevertech",
-    "cleverstack backend"
+    "backend"
   ],
   "main": "module.js",
   "devDependencies": {
