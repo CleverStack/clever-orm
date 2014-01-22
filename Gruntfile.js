@@ -4,10 +4,10 @@ module.exports = function( grunt ) {
     return [{
         exec: {
             rebase: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/orm/bin/rebase.js"
+                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js"
             },
             seed: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/orm/bin/seedModels.js"
+                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/seedModels.js"
             }
         }
     }, function( grunt ) {
