@@ -1,6 +1,6 @@
 {
   "name": "clever-orm",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "mysql": "2.0.0-rc2",
     "sequelize": "1.7.0-beta8"
@@ -24,9 +24,7 @@
     "backend"
   ],
   "main": "module.js",
-  "devDependencies": {
-
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/CleverStack/clever-orm.git"
