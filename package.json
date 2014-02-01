@@ -24,7 +24,10 @@
     "backend"
   ],
   "main": "module.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-prompt": "~0.2.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/CleverStack/clever-orm.git"
