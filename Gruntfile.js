@@ -28,7 +28,7 @@ module.exports = function( grunt ) {
                             default: ''
                         },
                         {
-                            config: 'cleverstackorm.options.dialect',
+                            config: 'cleverstackorm.dialect',
                             type: 'list',
                             message: 'Database dialect',
                             choices: [
@@ -39,13 +39,13 @@ module.exports = function( grunt ) {
                             ]
                         },
                         {
-                            config: 'cleverstackorm.options.host',
+                            config: 'cleverstackorm.host',
                             type: 'input',
                             message: 'Database host',
                             default: '127.0.0.1'
                         },
                         {
-                            config: 'cleverstackorm.options.port',
+                            config: 'cleverstackorm.port',
                             type: 'input',
                             message: 'Database port',
                             default: '3306'
@@ -93,12 +93,9 @@ module.exports = function( grunt ) {
             }
 
             Object.keys( conf ).forEach( function ( key ) {
-                if (typeof conf[ key ] === "object" && conf[ key ] !== null) {
-                    obj[ 'clever-orm' ].db[ key ] = obj[ 'clever-orm' ].db[ key ] || {};
-
-                    Object.keys( conf[ key ], function ( subKey ) {
-                        obj[ 'clever-orm' ].db[ key ][ subKey ] = conf[ key ][ subKey ];
-                    } );
+                if ([ 'host', 'dialect', 'port' ].indexOf( key ) > -1) {
+                    obj[ 'clever-orm' ].db.options = obj[ 'clever-orm' ].db.options || {};
+                    obj[ 'clever-orm' ].db.options[ key ] = conf[ key ];
                 } else {
                     obj[ 'clever-orm' ].db[ key ] = conf[ key ];
                 }
