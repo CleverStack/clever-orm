@@ -63,6 +63,8 @@ module.exports = function( grunt ) {
             }
         }
     }, function( grunt ) {
+        grunt.loadNpmTasks('grunt-prompt');
+
         // Register each command
         grunt.registerTask( 'db:rebase', [ 'exec:rebase' ] );
         grunt.registerTask( 'db:seed', [ 'exec:seed' ] );
