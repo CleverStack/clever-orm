@@ -86,7 +86,7 @@ module.exports = function( grunt ) {
             ,   obj  = {
                 'clever-orm': { }
             }
-            ,   file = path.join( process.cwd( ), 'local.json' );
+            ,   file = path.join( process.cwd( ), 'config', 'local.json' );
 
             if (fs.existsSync( file )) {
                 obj = require( file );
@@ -95,7 +95,7 @@ module.exports = function( grunt ) {
 
             Object.keys( conf ).forEach( function ( key ) {
                 if (typeof conf[ key ] === "object" && conf[ key ] !== null) {
-                    obj[ 'clever-orm' ][ key ] = obj[ key ] || {};
+                    obj[ 'clever-orm' ][ key ] = obj[ 'clever-orm' ][ key ] || {};
 
                     Object.keys( conf[ key ], function ( subKey ) {
                         obj[ 'clever-orm' ][ key ][ subKey ] = conf[ key ][ subKey ];
