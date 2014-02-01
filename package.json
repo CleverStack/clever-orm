@@ -1,6 +1,6 @@
 {
   "name": "clever-orm",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "dependencies": {
     "mysql": "2.0.0-rc2",
     "sequelize": "1.7.0-beta8"
