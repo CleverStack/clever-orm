@@ -53,7 +53,7 @@ module.exports = function( grunt ) {
                     ]
                 }
             }
-        }
+        },
         exec: {
             rebase: {
                 cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js"
