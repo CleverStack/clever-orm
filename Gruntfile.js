@@ -92,16 +92,15 @@ module.exports = function( grunt ) {
                 obj = require( file );
             }
 
-
             Object.keys( conf ).forEach( function ( key ) {
                 if (typeof conf[ key ] === "object" && conf[ key ] !== null) {
-                    obj[ 'clever-orm' ][ key ] = obj[ 'clever-orm' ][ key ] || {};
+                    obj[ 'clever-orm' ].db[ key ] = obj[ 'clever-orm' ].db[ key ] || {};
 
                     Object.keys( conf[ key ], function ( subKey ) {
-                        obj[ 'clever-orm' ][ key ][ subKey ] = conf[ key ][ subKey ];
+                        obj[ 'clever-orm' ].db[ key ][ subKey ] = conf[ key ][ subKey ];
                     } );
                 } else {
-                    obj[ 'clever-orm' ][ key ] = conf[ key ];
+                    obj[ 'clever-orm' ].db[ key ] = conf[ key ];
                 }
             } );
 
