@@ -92,6 +92,8 @@ module.exports = function( grunt ) {
                 obj = require( file );
             }
 
+            obj[ 'clever-orm' ] = obj[ 'clever-orm' ] || {};
+
             Object.keys( conf ).forEach( function ( key ) {
                 if ([ 'host', 'dialect', 'port' ].indexOf( key ) > -1) {
                     obj[ 'clever-orm' ].db.options = obj[ 'clever-orm' ].db.options || {};
