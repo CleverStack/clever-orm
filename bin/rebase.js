@@ -9,7 +9,7 @@ env.moduleLoader.loadModules();
 
 // Force a sync
 injector.getInstance( 'sequelize' )
-    .sync()
+    .sync( { force: true } )
     .success(function () {
     	console.log( 'Database is rebased' );
         // @TODO implement dialect specific SQL running after rebase (triggers etc)
