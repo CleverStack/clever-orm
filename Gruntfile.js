@@ -4,6 +4,9 @@ var fs      = require( 'fs' )
 ,   path    = require( 'path' )
 
 module.exports = function( grunt ) {
+    // Arguments for individual module rebase/seed
+    var dbTarget = grunt.option( 'module' ) || null;
+
     return [{
         prompt: {
             cleverstack: {
@@ -56,10 +59,10 @@ module.exports = function( grunt ) {
         },
         exec: {
             rebase: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js"
+                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js " + dbTarget
             },
             seed: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/seedModels.js"
+                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/seedModels.js " + dbTarget
             }
         }
     }, function( grunt ) {

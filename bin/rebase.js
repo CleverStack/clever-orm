@@ -1,11 +1,19 @@
 var fs = require( 'fs' )
   , utils = require( 'utils' )
-  , env = utils.bootstrapEnv(); // Bootstrap the environment
+  , env = utils.bootstrapEnv() // Bootstrap the environment
+  , moduleName = process.argv && process.argv[ 2 ] != 'null'
+        ? process.argv[ 2 ]
+        : false;
 
 console.log('Forcing Database to be created! (Note: All your data will disapear!)');
 
 // Load all the modules
-env.moduleLoader.loadModules();
+if ( moduleName ) {
+    env.moduleLoader.loadModule( 'clever-orm', env );
+    env.moduleLoader.loadModule( moduleName, env );
+} else {
+    env.moduleLoader.loadModules( env );
+}
 
 // Force a sync
 injector.getInstance( 'sequelize' )

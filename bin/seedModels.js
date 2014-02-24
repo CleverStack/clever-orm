@@ -3,14 +3,22 @@ var fs = require( 'fs' )
   , utils = require( 'utils' )
   , crypto = require( 'crypto' )
   , async = require( 'async' )
-  , inflect = require( 'i' )();
+  , inflect = require( 'i' )()
+  , moduleName = process.argv && process.argv[ 2 ] != 'null'
+        ? process.argv[ 2 ]
+        : false;
 
 // Bootstrap the environment, but don't initializeModuleRoutes( injector )
 var env = utils.bootstrapEnv()
   , config = env.config;
 
 // Load all the modules
-env.moduleLoader.loadModules();
+if ( moduleName ) {
+    env.moduleLoader.loadModule( 'clever-orm', env );
+    env.moduleLoader.loadModule( moduleName, env );
+} else {
+    env.moduleLoader.loadModules( env );
+}
 
 // Load the seedData and get the models
 var seedData = require( 'seedData' )
