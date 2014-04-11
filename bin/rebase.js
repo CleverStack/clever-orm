@@ -25,7 +25,7 @@ injector.getInstance( 'sequelize' )
         env.moduleLoader.shutdown();
     })
     .error(function( err ) {
-        console.error('Error trying to connect to ' + env.config.orm.db.options.dialect, err);
-
+        console.error('Error trying to connect to ' + env.config['clever-orm'].db.options.dialect, err);
+        
         env.moduleLoader.shutdown();
     });
