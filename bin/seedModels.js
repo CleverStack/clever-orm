@@ -84,6 +84,9 @@ async.forEachSeries(
                                     funcName = 'set' + assocModelName;
                                     associations = associations[0];
                                 }
+                                
+                                // strip "Model" from funcName
+                                funcName = funcName.replace(/(Model)$/g,'');
 
                                 console.log('Calling ' + funcName);
                                 model[funcName](associations).success(function() {
