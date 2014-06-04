@@ -11,9 +11,9 @@ Module = ModuleClass.extend({
         this.models = {};
     },
 
-    preResources: function() {
+    preInit: function() {
         debug( 'Opening connection to database' );
-
+        
         sequelize = new Sequelize(
             this.config.db.database,
             this.config.db.username,
