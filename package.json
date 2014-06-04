@@ -3,7 +3,7 @@
   "version": "0.0.16",
   "dependencies": {
     "mysql": "2.0.0-rc2",
-    "sequelize": "^1.7.x",
+    "sequelize": "^1.7.x"
   },
   "author": {
     "name": "Clevertech",
