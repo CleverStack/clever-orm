@@ -1,5 +1,4 @@
-var mongoose        = require( 'mongoose' )
-  , injector        = require( 'injector' )
+var injector        = require( 'injector' )
   , Sequelize       = require( 'sequelize' )
   , Module          = require( 'classes' ).Module;
 
