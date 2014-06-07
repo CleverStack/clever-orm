@@ -5,6 +5,14 @@ var fs = require( 'fs' )
         ? process.argv[ 2 ]
         : false;
 
+// Add some classes for simplicity
+var classes = require( 'classes' );
+injector.instance( 'Class', classes.Class );
+injector.instance( 'Model', classes.Model );
+injector.instance( 'Service', classes.Service );
+injector.instance( 'Controller', classes.Controller );
+injector.instance( 'Module', classes.Module );
+
 console.log('Forcing Database to be created! (Note: All your data will disapear!)');
 
 // Load all the modules

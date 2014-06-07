@@ -1,29 +1,30 @@
-var Sequelize = require( 'sequelize' )
-  , debug = require( 'debug' )( 'ORM' )
-  , ModuleClass = require( 'classes' ).ModuleClass
-  , sequelize
-  , Module;
+var mongoose        = require( 'mongoose' )
+  , injector        = require( 'injector' )
+  , Sequelize       = require( 'sequelize' )
+  , Module          = require( 'classes' ).Module;
 
-Module = ModuleClass.extend({
-    models: null,
+module.exports = Module.extend({
+
+    models: {},
+
+    sequelize: null,
 
     preSetup: function() {
-        this.models = {};
-    },
+        this.debug( 'Opening database connection to ' + this.config.db.options.dialect + '...' );
 
-    preInit: function() {
-        debug( 'Opening connection to database' );
-        
-        sequelize = new Sequelize(
+        this.sequelize = new Sequelize(
             this.config.db.database,
             this.config.db.username,
             this.config.db.password,
             this.config.db.options
         );
+    },
+
+    preInit: function() {
+        this.debug( 'Adding Sequelize module and sequelize instance to the injector...' );
 
         injector.instance( 'Sequelize', Sequelize );
-        injector.instance( 'DataTypes', Sequelize );
-        injector.instance( 'sequelize', sequelize );
+        injector.instance( 'sequelize', this.sequelize );
     },
 
     modulesLoaded: function() {
@@ -31,7 +32,7 @@ Module = ModuleClass.extend({
     },
 
     defineModelsAssociations: function() {
-        debug( 'Defining model assocations' );
+        this.debug( 'Defining model assocations' );
 
         Object.keys( this.config.modelAssociations ).forEach( this.proxy( function( modelName ) {
             Object.keys( this.config.modelAssociations[ modelName ] ).forEach( this.proxy( 'defineModelAssociations', modelName ) );
@@ -50,32 +51,80 @@ Module = ModuleClass.extend({
     associateModels: function( modelName, assocType, assocTo ) {
         // Support second argument
         if ( assocTo instanceof Array ) {
-            debug( '%s %s %s with second argument of ', modelName, assocType, assocTo[0], assocTo[1] );
+            this.debug( '%s %s %s with second argument of ', modelName, assocType, assocTo[0], assocTo[1] );
             this.models[ modelName ][ assocType ]( this.models[ assocTo[0] ], assocTo[1] );
         } else {
-            debug( '%s %s %s', modelName, assocType, assocTo );
+            this.debug( '%s %s %s', modelName, assocType, assocTo );
             this.models[ modelName ][ assocType ]( this.models[assocTo] );
         }
     },
 
-    getModel: function( modelPath ) {
-        var modelName = modelPath.split( '/' ).pop().split( '.' ).shift();
+    parseModelSchema: function( Static, Proto ) {
+        var parseDebug = this.proxy(function( msg ) { 
+                this.debug( Static._name + 'Model: ' + msg ); 
+            })
+          , sequelizeConf = {}
+          , fields = {};
 
-        if ( typeof this.models[ modelName ] === 'undefined' ) {
-            debug( [ 'Loading model', modelName, 'from', modelPath ].join( ' ' ) );
-
-            // Call on sequelizejs to load the model
-            this.models[ modelName ] = sequelize.import( modelPath );
-
-            // Set a flat for tracking
-            this.models[ modelName ].ORM = true;
-
-            // Add the model to the injector
-            injector.instance( 'ORM' + modelName, this.models[ modelName ] );
+        if ( this.models[ Static._name ] !== undefined ) {
+            parseDebug( 'Returning previously parsed and generated model...' );
+            return this.models[ Static._name ];
         }
 
-        return this.models[ modelName ];
-    },
-});
+        parseDebug( 'Parsing schema for model...' );
+        Object.keys( Static._schema ).forEach(function( name ) {
+            var options = Static._schema[ name ]
+              , fieldDefinition = {};
 
-module.exports = new Module( 'clever-orm', injector );
+            // If a type has been specified outside of the object, handle that
+            if ( typeof options !== 'object' ) {
+                options = {
+                    type: options
+                }
+            }
+
+            // Figure out the type mapping for sequelizejs
+            if ( options.type === undefined ) {
+                throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            } else if ( options.type === Number ) {
+                fieldDefinition.type = Sequelize.INTEGER;
+            } else if ( options.type === String ) {
+                fieldDefinition.type = Sequelize.STRING;
+            } else if ( options.type === Boolean ) {
+                fieldDefinition.type = Sequelize.BOOLEAN;
+            } else if ( options.type === Date ) {
+                fieldDefinition.type = Sequelize.DATE;
+            } else {
+                throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            }
+
+            // Handle options
+            [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default' ].forEach(function( optionName ) {
+                if ( options[ optionName ] !== undefined ) {
+                    if ( optionName === 'primaryKey' ) {
+                        Static.primaryKey = name;
+                    }
+
+                    fieldDefinition[ optionName === 'default' ? 'defaultValue' : optionName ] = options[ optionName ];
+                }
+            });
+
+            fields[ name ] = fieldDefinition;
+        });
+    
+        parseDebug( 'Configuring static object for sequelize...' );
+        sequelizeConf.paranoid = Static.softDeletable;
+        sequelizeConf.timestamps = Static.timeStampable;
+
+        parseDebug( 'Setting sequelize as the _db (adapter) for the Model...' );
+        Static._db = this.sequelize;
+
+        parseDebug( 'Generating new sequelize model using computed schema...' );
+        var model = this.sequelize.define( Static._name, fields, sequelizeConf );
+
+        parseDebug( 'Caching completed native model...' );
+        this.models[ Static._name ] = model;
+
+        return model;
+    }
+});

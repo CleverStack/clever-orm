@@ -12,6 +12,14 @@ var fs = require( 'fs' )
 var env = utils.bootstrapEnv()
   , config = env.config;
 
+// Add some classes for simplicity
+var classes = require( 'classes' );
+injector.instance( 'Class', classes.Class );
+injector.instance( 'Model', classes.Model );
+injector.instance( 'Service', classes.Service );
+injector.instance( 'Controller', classes.Controller );
+injector.instance( 'Module', classes.Module );
+
 // Load all the modules
 if ( moduleName ) {
     env.moduleLoader.loadModule( 'clever-orm', env );
@@ -32,7 +40,7 @@ Object.keys(seedData).forEach(function( modelName ) {
 async.forEachSeries(
     Object.keys(seedData),
     function forEachModelType( modelName, cb ) {
-        var ModelType = models.orm[modelName]
+        var ModelType = models[ modelName.replace( 'Model', '' ) ]
           , Models = seedData[modelName];
 
         if ( !ModelType || !Models ) {
@@ -45,7 +53,7 @@ async.forEachSeries(
                 var assocs = data.associations;
                 delete data.associations;
 
-                ModelType.create(data).success(function( model ) {
+                ModelType.create(data).then(function( model ) {
                     data.associations = assocs;
 
                     console.log('Created ' + modelName);
@@ -100,7 +108,7 @@ async.forEachSeries(
                     } else {
                         modelCb(null);
                     }
-                }).error(modelCb);
+                }).catch(modelCb);
             },
             function forEachModelComplete( err ) {
                 cb(err);
