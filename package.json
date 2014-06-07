@@ -1,6 +1,6 @@
 {
   "name": "clever-orm",
-  "version": "0.0.16",
+  "version": "1.0.0",
   "dependencies": {
     "mysql": "2.0.0-rc2",
     "sequelize": "^1.7.x"
@@ -11,7 +11,7 @@
     "web": "http://www.clevertech.biz"
   },
   "collaborators": [
-    "Richard Gustin <richard@clevertech.biz>"
+    "Richard Gustin <richard.gustin86@gmail.com>"
   ],
   "description": "Clevertech ORM (SQL) Module for CleverStack",
   "keywords": [
