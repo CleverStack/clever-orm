@@ -28,6 +28,7 @@ module.exports = Module.extend({
 
     modulesLoaded: function() {
         this.defineModelsAssociations();
+        this.emit( 'ready' );
     },
 
     defineModelsAssociations: function() {
