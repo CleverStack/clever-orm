@@ -1,6 +1,6 @@
-var injector        = require( 'injector' )
-  , Sequelize       = require( 'sequelize' )
-  , Module          = require( 'classes' ).Module;
+var injector    = require( 'injector' )
+  , Sequelize   = require( 'sequelize' )
+  , Module      = require( 'classes' ).Module;
 
 module.exports = Module.extend({
 
