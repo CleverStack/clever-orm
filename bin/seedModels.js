@@ -1,122 +1,115 @@
-var fs = require( 'fs' )
-  , path = require( 'path' )
-  , utils = require( 'utils' )
-  , crypto = require( 'crypto' )
-  , async = require( 'async' )
-  , inflect = require( 'i' )()
-  , moduleName = process.argv && process.argv[ 2 ] != 'null'
-        ? process.argv[ 2 ]
-        : false;
+var injector    = require( 'injector' )
+  , fs          = require( 'fs' )
+  , path        = require( 'path' )
+  , crypto      = require( 'crypto' )
+  , async       = require( 'async' )
+  , utils       = require( 'utils' )
+  , env         = utils.bootstrapEnv()
+  , moduleLdr   = env.moduleLoader
+  , inflect     = require( 'i' )()
+  , moduleName  = process.argv && process.argv[ 2 ] != 'null' ? process.argv[ 2 ] : false;
 
-// Bootstrap the environment, but don't initializeModuleRoutes( injector )
-var env = utils.bootstrapEnv()
-  , config = env.config;
+// Seed once our modules have loaded
+moduleLdr.on( 'modulesLoaded', function() {
+    var seedData = require( 'seedData' )
+      , models = require( 'models' );
 
-// Add some classes for simplicity
-var classes = require( 'classes' );
-injector.instance( 'Class', classes.Class );
-injector.instance( 'Model', classes.Model );
-injector.instance( 'Service', classes.Service );
-injector.instance( 'Controller', classes.Controller );
-injector.instance( 'Module', classes.Module );
+    var assocMap = {};
+    Object.keys(seedData).forEach(function( modelName ) {
+        assocMap[modelName] = [];
+    });
 
-// Load all the modules
-if ( moduleName ) {
-    env.moduleLoader.loadModule( 'clever-orm', env );
-    env.moduleLoader.loadModule( moduleName, env );
-} else {
-    env.moduleLoader.loadModules( env );
-}
+    async.forEachSeries(
+        Object.keys(seedData),
+        function forEachModelType( modelName, cb ) {
+            var ModelType = models[ modelName.replace( 'Model', '' ) ]
+              , Models = seedData[modelName];
 
-// Load the seedData and get the models
-var seedData = require( 'seedData' )
-  , models = require( 'models' );
+            if ( !ModelType || !Models ) {
+                return cb();
+            }
 
-var assocMap = {};
-Object.keys(seedData).forEach(function( modelName ) {
-    assocMap[modelName] = [];
-});
+            async.forEachSeries(
+                Models,
+                function forEachModel( data, modelCb ) {
+                    var assocs = data.associations;
+                    delete data.associations;
 
-async.forEachSeries(
-    Object.keys(seedData),
-    function forEachModelType( modelName, cb ) {
-        var ModelType = models[ modelName.replace( 'Model', '' ) ]
-          , Models = seedData[modelName];
+                    ModelType.create(data).then(function( model ) {
+                        data.associations = assocs;
 
-        if ( !ModelType || !Models ) {
-            return cb();
-        }
+                        console.log('Created ' + modelName);
+                        assocMap[modelName].push(model);
+                        if ( data.associations !== undefined ) {
+                            var assocLength = Object.keys(data.associations).length,
+                                called = 0;
 
-        async.forEachSeries(
-            Models,
-            function forEachModel( data, modelCb ) {
-                var assocs = data.associations;
-                delete data.associations;
+                            Object.keys(data.associations).forEach(function( assocModelName ) {
+                                var required = data.associations[assocModelName]
+                                    , associations = [];
 
-                ModelType.create(data).then(function( model ) {
-                    data.associations = assocs;
+                                assocMap[assocModelName].forEach(function( m ) {
+                                    var isMatched = null;
 
-                    console.log('Created ' + modelName);
-                    assocMap[modelName].push(model);
-                    if ( data.associations !== undefined ) {
-                        var assocLength = Object.keys(data.associations).length,
-                            called = 0;
-
-                        Object.keys(data.associations).forEach(function( assocModelName ) {
-                            var required = data.associations[assocModelName]
-                                , associations = [];
-
-                            assocMap[assocModelName].forEach(function( m ) {
-                                var isMatched = null;
-
-                                Object.keys(required).forEach(function( reqKey ) {
-                                    if ( isMatched !== false ) {
-                                        if ( m[reqKey] === required[reqKey] ) {
-                                            isMatched = true;
-                                        } else {
-                                            isMatched = false;
+                                    Object.keys(required).forEach(function( reqKey ) {
+                                        if ( isMatched !== false ) {
+                                            if ( m[reqKey] === required[reqKey] ) {
+                                                isMatched = true;
+                                            } else {
+                                                isMatched = false;
+                                            }
                                         }
+                                    });
+
+                                    if ( isMatched ) {
+                                        associations.push(m);
                                     }
                                 });
 
-                                if ( isMatched ) {
-                                    associations.push(m);
+                                if ( associations.length ) {
+                                    var funcName = 'set' + inflect.pluralize(assocModelName);
+
+                                    // Handle hasOne
+                                    if ( typeof model[funcName] !== 'function' ) {
+                                        funcName = 'set' + assocModelName;
+                                        associations = associations[0];
+                                    }
+                                    
+                                    // strip "Model" from funcName
+                                    funcName = funcName.replace(/(Model)$/g,'');
+
+                                    console.log('Calling ' + funcName);
+                                    model[funcName](associations).success(function() {
+                                        called++;
+
+                                        if ( called == assocLength )
+                                            modelCb(null);
+                                    }).error(modelCb);
                                 }
                             });
+                        } else {
+                            modelCb(null);
+                        }
+                    }).catch(modelCb);
+                },
+                function forEachModelComplete( err ) {
+                    cb(err);
+                }
+            );
+        },
+        function forEachModelTypeComplete( err ) {
+            console.log(err ? 'Error: ' : 'Seed completed with no errors', err);
+            env.moduleLoader.shutdown();
+        }
+    );
+});
 
-                            if ( associations.length ) {
-                                var funcName = 'set' + inflect.pluralize(assocModelName);
+// Allow loading only one model at a time to rebase
+if ( moduleName ) {
+    env.packageJson.bundledDependencies.length = 0
+    env.packageJson.bundledDependencies.push( 'clever-orm', env );
+    env.packageJson.bundledDependencies.push( moduleName, env );
+}
 
-                                // Handle hasOne
-                                if ( typeof model[funcName] !== 'function' ) {
-                                    funcName = 'set' + assocModelName;
-                                    associations = associations[0];
-                                }
-                                
-                                // strip "Model" from funcName
-                                funcName = funcName.replace(/(Model)$/g,'');
-
-                                console.log('Calling ' + funcName);
-                                model[funcName](associations).success(function() {
-                                    called++;
-
-                                    if ( called == assocLength )
-                                        modelCb(null);
-                                }).error(modelCb);
-                            }
-                        });
-                    } else {
-                        modelCb(null);
-                    }
-                }).catch(modelCb);
-            },
-            function forEachModelComplete( err ) {
-                cb(err);
-            }
-        );
-    },
-    function forEachModelTypeComplete( err ) {
-        console.log(err ? 'Error: ' : 'Seed completed with no errors', err);
-        env.moduleLoader.shutdown();
-    }
-);
+// Load
+moduleLdr.loadModules();
