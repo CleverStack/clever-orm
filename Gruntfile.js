@@ -86,12 +86,13 @@ module.exports = function( grunt ) {
         grunt.registerTask( 'prompt:clever', [ 'prompt:cleverstack', 'createConfig' ] );
         grunt.registerTask( 'createConfig', 'Creates a .json config file for database credentials', function ( ) {
             var conf = grunt.config( 'cleverstackorm' )
-            ,   obj  = {
-                'clever-orm': { }
-            }
-            ,   file = path.join( process.cwd( ), 'config', 'local.json' );
+              , obj  = {
+                    'clever-orm': { db: { options: {} } }
+                }
+              , env  = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : 'local'
+              , file = path.join( process.cwd( ), 'config', env + '.json' );
 
-            if (fs.existsSync( file )) {
+            if ( fs.existsSync( file ) ) {
                 obj = require( file );
             }
 
