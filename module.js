@@ -1,6 +1,7 @@
 var injector    = require( 'injector' )
   , Sequelize   = require( 'sequelize' )
-  , Module      = require( 'classes' ).Module;
+  , Module      = require( 'classes' ).Module
+  , Model       = require( 'classes' ).Model;
 
 module.exports = Module.extend({
 
@@ -72,45 +73,7 @@ module.exports = Module.extend({
         }
 
         parseDebug( 'Parsing schema for model...' );
-        Object.keys( Static._schema ).forEach(function( name ) {
-            var options = Static._schema[ name ]
-              , fieldDefinition = {};
-
-            // If a type has been specified outside of the object, handle that
-            if ( typeof options !== 'object' ) {
-                options = {
-                    type: options
-                }
-            }
-
-            // Figure out the type mapping for sequelizejs
-            if ( options.type === undefined ) {
-                throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
-            } else if ( options.type === Number ) {
-                fieldDefinition.type = Sequelize.INTEGER;
-            } else if ( options.type === String ) {
-                fieldDefinition.type = Sequelize.STRING;
-            } else if ( options.type === Boolean ) {
-                fieldDefinition.type = Sequelize.BOOLEAN;
-            } else if ( options.type === Date ) {
-                fieldDefinition.type = Sequelize.DATE;
-            } else {
-                throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
-            }
-
-            // Handle options
-            [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default' ].forEach(function( optionName ) {
-                if ( options[ optionName ] !== undefined ) {
-                    if ( optionName === 'primaryKey' ) {
-                        Static.primaryKey = name;
-                    }
-
-                    fieldDefinition[ optionName === 'default' ? 'defaultValue' : optionName ] = options[ optionName ];
-                }
-            });
-
-            fields[ name ] = fieldDefinition;
-        });
+        Object.keys( Static._schema ).forEach( this.proxy( 'parseSchemaField', Static, fields ) );
     
         parseDebug( 'Configuring static object for sequelize...' );
         sequelizeConf.paranoid = Static.softDeletable;
@@ -126,5 +89,79 @@ module.exports = Module.extend({
         this.models[ Static._name ] = model;
 
         return model;
+    },
+
+    parseSchemaField: function( Static, fields, name ) {
+        var options = Static._schema[ name ]
+          , fieldDefinition = {};
+
+        // Allow direct syntax
+        if ( typeof options !== 'object' || options instanceof Array ) {
+            options = {
+                type: options
+            }
+        }
+
+        // Handle array of "Something"
+        if ( options.type instanceof Array || options.type === Array ) {
+            options.of = ( options.type.length > 0 && options.type[ 0 ] !== undefined ) ? options.type[ 0 ] : String;
+            options.type = Array;
+        }
+
+        // Get the type
+        fieldDefinition.type = this.getFieldType( options );
+
+        // Handle options
+        [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default' ].forEach(function( optionName ) {
+            if ( options[ optionName ] !== undefined ) {
+                if ( optionName === 'primaryKey' ) {
+                    Static.primaryKey = name;
+                }
+
+                fieldDefinition[ optionName === 'default' ? 'defaultValue' : optionName ] = options[ optionName ];
+            }
+        });
+
+        // console.log(name);
+        // console.dir(options);
+        // console.dir(fieldDefinition);
+
+        fields[ name ] = fieldDefinition;
+    },
+
+    getFieldType: function( options ) {
+        switch( options.type ) {
+            case Number:
+                return Sequelize.INTEGER;
+            case String:
+                return Sequelize.STRING;
+            case Boolean:
+                return Sequelize.BOOLEAN;
+            case Date:
+                return Sequelize.DATE;
+
+            case Array:
+                return options.of ? Sequelize.ARRAY( this.getFieldType( { type: options.of } ) ) : Sequelize.ARRAY( Sequelize.STRING );
+            case Buffer:
+                return Sequelize.STRING.BINARY;
+            case Model.Types.ENUM:
+                return Sequelize.ENUM( options.values );
+
+            case Model.Types.BIGINT:
+                return Sequelize.BIGINT;
+            case Model.Types.FLOAT:
+                return Sequelize.FLOAT;
+            case Model.Types.DECIMAL:
+                return Sequelize.DECIMAL;
+            case Model.Types.TEXT:
+                return Sequelize.TEXT;
+
+            case undefined:
+                throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
+                break;
+            default:
+                throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
+                break;
+        }
     }
 });
