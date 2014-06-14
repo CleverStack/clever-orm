@@ -109,7 +109,7 @@ module.exports = Module.extend({
         }
 
         // Get the type
-        fieldDefinition.type = this.getFieldType( options );
+        fieldDefinition.type = this.getFieldType( Static, options );
 
         // Handle options
         [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default' ].forEach(function( optionName ) {
@@ -122,14 +122,10 @@ module.exports = Module.extend({
             }
         });
 
-        // console.log(name);
-        // console.dir(options);
-        // console.dir(fieldDefinition);
-
         fields[ name ] = fieldDefinition;
     },
 
-    getFieldType: function( options ) {
+    getFieldType: function( Static, options ) {
         switch( options.type ) {
             case Number:
                 return Sequelize.INTEGER;
@@ -139,23 +135,32 @@ module.exports = Module.extend({
                 return Sequelize.BOOLEAN;
             case Date:
                 return Sequelize.DATE;
-
             case Array:
-                return options.of ? Sequelize.ARRAY( this.getFieldType( { type: options.of } ) ) : Sequelize.ARRAY( Sequelize.STRING );
+                return options.of ? Sequelize.ARRAY( this.getFieldType( Static, { type: options.of } ) ) : Sequelize.ARRAY( Sequelize.STRING );
             case Buffer:
                 return Sequelize.STRING.BINARY;
             case Model.Types.ENUM:
                 return Sequelize.ENUM( options.values );
-
             case Model.Types.BIGINT:
-                return Sequelize.BIGINT;
+                return options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
             case Model.Types.FLOAT:
-                return Sequelize.FLOAT;
+                if ( !!options.decimals ) {
+                    return Sequelize.FLOAT( options.length, options.decimals );
+                } else if ( !!options.length ) {
+                    return Sequelize.FLOAT( options.length );
+                } else {
+                    return Sequelize.FLOAT;
+                }
             case Model.Types.DECIMAL:
-                return Sequelize.DECIMAL;
+                if ( !!options.scale ) {
+                    return Sequelize.DECIMAL( options.precision, options.scale );
+                } else if ( !!options.precision ) {
+                    return Sequelize.DECIMAL( options.precision );
+                } else {
+                    return Sequelize.DECIMAL;
+                }
             case Model.Types.TEXT:
                 return Sequelize.TEXT;
-
             case undefined:
                 throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
                 break;
