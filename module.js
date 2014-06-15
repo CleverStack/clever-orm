@@ -198,10 +198,8 @@ module.exports = Module.extend({
             break;
         case undefined:
             throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
-            break;
         default:
             throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
-            break;
         }
 
         return field;
