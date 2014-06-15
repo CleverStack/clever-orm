@@ -174,7 +174,7 @@ function installTestModule() {
     return new Promise( function( resolve, reject ) {
         var pkgJson     = path.resolve( path.join( __dirname, '..', prName, 'package.json' ) )
           , packageJson = require( pkgJson )
-          , source      = path.resolve( path.join( __dirname, '..', prName, 'unit', 'test-module' ) )
+          , source      = path.resolve( path.join( __dirname, '..', prName, 'tests', 'unit', 'test-module' ) )
           , dest        = path.resolve( path.join( __dirname, '..', prName, 'modules', 'test-module' ) );
 
         console.log( 'step #5 - install test-module and add to bundledDependencies - begin' );
