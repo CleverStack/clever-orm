@@ -60,7 +60,7 @@ module.exports = Module.extend({
         }
     },
 
-    parseModelSchema: function( Static, Proto ) {
+    parseModelSchema: function( Static ) {
         var parseDebug = this.proxy(function( msg ) { 
                 this.debug( Static._name + 'Model: ' + msg ); 
             })
@@ -131,14 +131,7 @@ module.exports = Module.extend({
         switch( options.type ) {
 
         case Number:
-            field = !!options.length ? Sequelize.INTEGER( options.length ) : Sequelize.INTEGER;
-            if ( !!options.unsigned && !!options.zerofill ) {
-                field = field.UNSIGNED.ZEROFILL;
-            } else if ( !!options.unsigned && !options.zerofill ) {
-                field = field.UNSIGNED;
-            } else if ( !options.unsigned && !!options.zerofill ) {
-                field = field.ZEROFILL;
-            }
+            field = this.numberType( options );
             break;
         case String:
             field = Sequelize.STRING;
@@ -159,39 +152,13 @@ module.exports = Module.extend({
             field = Sequelize.ENUM( options.values );
             break;
         case Model.Types.BIGINT:
-            field = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
-            if ( !!options.unsigned && !!options.zerofill ) {
-                field = bigint.UNSIGNED.ZEROFILL;
-            } else if ( !!options.unsigned && !options.zerofill ) {
-                field = bigint.UNSIGNED;
-            } else if ( !options.unsigned && !!options.zerofill ) {
-                field = bigint.ZEROFILL;
-            }
+            field = this.bigIntType( options );
             break;
         case Model.Types.FLOAT:
-            field = Sequelize.FLOAT;
-            if ( !!options.decimals ) {
-                field = Sequelize.FLOAT( options.length, options.decimals );
-            } else if ( !!options.length ) {
-                field = Sequelize.FLOAT( options.length );
-            }
-
-            if ( !!options.unsigned && !!options.zerofill ) {
-                field = field.UNSIGNED.ZEROFILL;
-            } else if ( !!options.unsigned && !options.zerofill ) {
-                field = field.UNSIGNED;
-            } else if ( !options.unsigned && !!options.zerofill ) {
-                field = field.ZEROFILL;
-            }
+            field = this.floatType( options );
             break;
         case Model.Types.DECIMAL:
-            if ( !!options.scale ) {
-                field = Sequelize.DECIMAL( options.precision, options.scale );
-            } else if ( !!options.precision ) {
-                field = Sequelize.DECIMAL( options.precision );
-            } else {
-                field = Sequelize.DECIMAL;
-            }
+            field = this.decimalType( options );
             break;
         case Model.Types.TEXT:
             field = Sequelize.TEXT;
@@ -202,6 +169,58 @@ module.exports = Module.extend({
             throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
         }
 
+        return field;
+    },
+
+    numberType: function( options ) {
+        var field = !!options.length ? Sequelize.INTEGER( options.length ) : Sequelize.INTEGER;
+        if ( !!options.unsigned && !!options.zerofill ) {
+            field = field.UNSIGNED.ZEROFILL;
+        } else if ( !!options.unsigned && !options.zerofill ) {
+            field = field.UNSIGNED;
+        } else if ( !options.unsigned && !!options.zerofill ) {
+            field = field.ZEROFILL;
+        }
+        return field;
+    },
+
+    bigIntType: function( options ) {
+        var field = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
+        if ( !!options.unsigned && !!options.zerofill ) {
+            field = bigint.UNSIGNED.ZEROFILL;
+        } else if ( !!options.unsigned && !options.zerofill ) {
+            field = bigint.UNSIGNED;
+        } else if ( !options.unsigned && !!options.zerofill ) {
+            field = bigint.ZEROFILL;
+        }
+        return field;
+    },
+
+    floatType: function( options ) {
+        var field = Sequelize.FLOAT;
+        if ( !!options.decimals ) {
+            field = Sequelize.FLOAT( options.length, options.decimals );
+        } else if ( !!options.length ) {
+            field = Sequelize.FLOAT( options.length );
+        }
+
+        if ( !!options.unsigned && !!options.zerofill ) {
+            field = field.UNSIGNED.ZEROFILL;
+        } else if ( !!options.unsigned && !options.zerofill ) {
+            field = field.UNSIGNED;
+        } else if ( !options.unsigned && !!options.zerofill ) {
+            field = field.ZEROFILL;
+        }
+        return field;
+    },
+
+    decimalType: function( options ) {
+        var field = Sequelize.DECIMAL;
+        if ( !!options.scale ) {
+            field = Sequelize.DECIMAL( options.precision, options.scale );
+        } else if ( !!options.precision ) {
+            field = Sequelize.DECIMAL( options.precision );
+        }
         return field;
     }
 });
