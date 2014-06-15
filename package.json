@@ -6,14 +6,14 @@
     "sequelize": "^1.7.x"
   },
   "author": {
-    "name": "Clevertech",
-    "email": "info@clevertech.biz",
-    "web": "http://www.clevertech.biz"
+    "name": "CleverStack",
+    "email": "admin@cleverstack.io",
+    "web": "http://cleverstack.io"
   },
   "collaborators": [
     "Richard Gustin <richard.gustin86@gmail.com>"
   ],
-  "description": "Clevertech ORM (SQL) Module for CleverStack",
+  "description": "CleverStack ORM (SQL) Module",
   "keywords": [
     "cleverstack",
     "cleverstack-module",
