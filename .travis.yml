@@ -8,6 +8,7 @@ before_install:
   - npm install -g bower
   - npm install -g cleverstack-cli
   - npm install ncp
+  - npm install rimraf
   - npm install bluebird
 
 before_script:
