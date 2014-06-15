@@ -112,7 +112,7 @@ module.exports = Module.extend({
         fieldDefinition.type = this.getFieldType( Static, options );
 
         // Handle options
-        [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default' ].forEach(function( optionName ) {
+        [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default', 'comment' ].forEach(function( optionName ) {
             if ( options[ optionName ] !== undefined ) {
                 if ( optionName === 'primaryKey' ) {
                     Static.primaryKey = name;
@@ -128,7 +128,16 @@ module.exports = Module.extend({
     getFieldType: function( Static, options ) {
         switch( options.type ) {
             case Number:
-                return Sequelize.INTEGER;
+                var integer = !!options.length ? Sequelize.INTEGER( options.length ) : Sequelize.INTEGER;
+                if ( !!options.unsigned && !!options.zerofill ) {
+                    return integer.UNSIGNED.ZEROFILL;
+                } else if ( !!options.unsigned && !options.zerofill ) {
+                    return integer.UNSIGNED;
+                } else if ( !options.unsigned && !!options.zerofill ) {
+                    return integer.ZEROFILL;
+                } else {
+                    return integer;
+                }
             case String:
                 return Sequelize.STRING;
             case Boolean:
@@ -142,14 +151,32 @@ module.exports = Module.extend({
             case Model.Types.ENUM:
                 return Sequelize.ENUM( options.values );
             case Model.Types.BIGINT:
-                return options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
-            case Model.Types.FLOAT:
-                if ( !!options.decimals ) {
-                    return Sequelize.FLOAT( options.length, options.decimals );
-                } else if ( !!options.length ) {
-                    return Sequelize.FLOAT( options.length );
+                var bigint = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
+                if ( !!options.unsigned && !!options.zerofill ) {
+                    return bigint.UNSIGNED.ZEROFILL;
+                } else if ( !!options.unsigned && !options.zerofill ) {
+                    return bigint.UNSIGNED;
+                } else if ( !options.unsigned && !!options.zerofill ) {
+                    return bigint.ZEROFILL;
                 } else {
-                    return Sequelize.FLOAT;
+                    return bigint;
+                }
+            case Model.Types.FLOAT:
+                var float = Sequelize.FLOAT;
+                if ( !!options.decimals ) {
+                    float = Sequelize.FLOAT( options.length, options.decimals );
+                } else if ( !!options.length ) {
+                    float = Sequelize.FLOAT( options.length );
+                }
+
+                if ( !!options.unsigned && !!options.zerofill ) {
+                    return float.UNSIGNED.ZEROFILL;
+                } else if ( !!options.unsigned && !options.zerofill ) {
+                    return float.UNSIGNED;
+                } else if ( !options.unsigned && !!options.zerofill ) {
+                    return float.ZEROFILL;
+                } else {
+                    return float;
                 }
             case Model.Types.DECIMAL:
                 if ( !!options.scale ) {
