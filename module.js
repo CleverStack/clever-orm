@@ -126,74 +126,84 @@ module.exports = Module.extend({
     },
 
     getFieldType: function( Static, options ) {
-        switch( options.type ) {
-            case Number:
-                var integer = !!options.length ? Sequelize.INTEGER( options.length ) : Sequelize.INTEGER;
-                if ( !!options.unsigned && !!options.zerofill ) {
-                    return integer.UNSIGNED.ZEROFILL;
-                } else if ( !!options.unsigned && !options.zerofill ) {
-                    return integer.UNSIGNED;
-                } else if ( !options.unsigned && !!options.zerofill ) {
-                    return integer.ZEROFILL;
-                } else {
-                    return integer;
-                }
-            case String:
-                return Sequelize.STRING;
-            case Boolean:
-                return Sequelize.BOOLEAN;
-            case Date:
-                return Sequelize.DATE;
-            case Array:
-                return options.of ? Sequelize.ARRAY( this.getFieldType( Static, { type: options.of } ) ) : Sequelize.ARRAY( Sequelize.STRING );
-            case Buffer:
-                return Sequelize.STRING.BINARY;
-            case Model.Types.ENUM:
-                return Sequelize.ENUM( options.values );
-            case Model.Types.BIGINT:
-                var bigint = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
-                if ( !!options.unsigned && !!options.zerofill ) {
-                    return bigint.UNSIGNED.ZEROFILL;
-                } else if ( !!options.unsigned && !options.zerofill ) {
-                    return bigint.UNSIGNED;
-                } else if ( !options.unsigned && !!options.zerofill ) {
-                    return bigint.ZEROFILL;
-                } else {
-                    return bigint;
-                }
-            case Model.Types.FLOAT:
-                var float = Sequelize.FLOAT;
-                if ( !!options.decimals ) {
-                    float = Sequelize.FLOAT( options.length, options.decimals );
-                } else if ( !!options.length ) {
-                    float = Sequelize.FLOAT( options.length );
-                }
+        var field;
 
-                if ( !!options.unsigned && !!options.zerofill ) {
-                    return float.UNSIGNED.ZEROFILL;
-                } else if ( !!options.unsigned && !options.zerofill ) {
-                    return float.UNSIGNED;
-                } else if ( !options.unsigned && !!options.zerofill ) {
-                    return float.ZEROFILL;
-                } else {
-                    return float;
-                }
-            case Model.Types.DECIMAL:
-                if ( !!options.scale ) {
-                    return Sequelize.DECIMAL( options.precision, options.scale );
-                } else if ( !!options.precision ) {
-                    return Sequelize.DECIMAL( options.precision );
-                } else {
-                    return Sequelize.DECIMAL;
-                }
-            case Model.Types.TEXT:
-                return Sequelize.TEXT;
-            case undefined:
-                throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
-                break;
-            default:
-                throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
-                break;
+        switch( options.type ) {
+
+        case Number:
+            field = !!options.length ? Sequelize.INTEGER( options.length ) : Sequelize.INTEGER;
+            if ( !!options.unsigned && !!options.zerofill ) {
+                field = field.UNSIGNED.ZEROFILL;
+            } else if ( !!options.unsigned && !options.zerofill ) {
+                field = field.UNSIGNED;
+            } else if ( !options.unsigned && !!options.zerofill ) {
+                field = field.ZEROFILL;
+            }
+            break;
+        case String:
+            field = Sequelize.STRING;
+            break;
+        case Boolean:
+            field = Sequelize.BOOLEAN;
+            break;
+        case Date:
+            field = Sequelize.DATE;
+            break;
+        case Array:
+            field = options.of ? Sequelize.ARRAY( this.getFieldType( Static, { type: options.of } ) ) : Sequelize.ARRAY( Sequelize.STRING );
+            break;
+        case Buffer:
+            field = Sequelize.STRING.BINARY;
+            break;
+        case Model.Types.ENUM:
+            field = Sequelize.ENUM( options.values );
+            break;
+        case Model.Types.BIGINT:
+            field = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
+            if ( !!options.unsigned && !!options.zerofill ) {
+                field = bigint.UNSIGNED.ZEROFILL;
+            } else if ( !!options.unsigned && !options.zerofill ) {
+                field = bigint.UNSIGNED;
+            } else if ( !options.unsigned && !!options.zerofill ) {
+                field = bigint.ZEROFILL;
+            }
+            break;
+        case Model.Types.FLOAT:
+            field = Sequelize.FLOAT;
+            if ( !!options.decimals ) {
+                field = Sequelize.FLOAT( options.length, options.decimals );
+            } else if ( !!options.length ) {
+                field = Sequelize.FLOAT( options.length );
+            }
+
+            if ( !!options.unsigned && !!options.zerofill ) {
+                field = field.UNSIGNED.ZEROFILL;
+            } else if ( !!options.unsigned && !options.zerofill ) {
+                field = field.UNSIGNED;
+            } else if ( !options.unsigned && !!options.zerofill ) {
+                field = field.ZEROFILL;
+            }
+            break;
+        case Model.Types.DECIMAL:
+            if ( !!options.scale ) {
+                field = Sequelize.DECIMAL( options.precision, options.scale );
+            } else if ( !!options.precision ) {
+                field = Sequelize.DECIMAL( options.precision );
+            } else {
+                field = Sequelize.DECIMAL;
+            }
+            break;
+        case Model.Types.TEXT:
+            field = Sequelize.TEXT;
+            break;
+        case undefined:
+            throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            break;
+        default:
+            throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            break;
         }
+
+        return field;
     }
 });
