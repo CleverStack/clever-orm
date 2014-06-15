@@ -5,6 +5,9 @@
     "mysql": "2.0.0-rc2",
     "sequelize": "^1.7.x"
   },
+  "scripts": {
+    "test": "grunt test:unit"
+  },
   "author": {
     "name": "CleverStack",
     "email": "admin@cleverstack.io",
