@@ -170,10 +170,70 @@ function configureOrmModule() {
     });
 }
 
+function installTestModule() {
+    return new Promise( function( resolve, reject ) {
+        var pkgJson     = path.resolve( path.join( __dirname, '..', 'package.json' ) )
+          , packageJson = require( pkgJson )
+          , source      = path.resolve( path.join( __dirname, 'unit', 'test-module' ) )
+          , dest        = path.resolve( path.join( __dirname, '..', 'modules', 'test-module' ) );
+
+        console.log( 'step #5 - install test-module and add to bundledDependencies - begin' );
+
+        rimraf( dest, function( e ) {
+            if ( e === null ) {
+                ncp( source, dest, function( err ) {
+                    if ( err !== null ) {
+                        console.log( 'Error in step #5 - ' + err + '\n');
+                        reject( e );
+                    } else if ( packageJson.bundledDependencies.indexOf( 'test-module' ) === -1 ) {
+                        packageJson.bundledDependencies.push( 'test-module' );
+                        fs.writeFile( pkgJson, JSON.stringify( packageJson, null, '  ' ), function( e ) {
+                            if ( !!e ) {
+                                console.log( 'Error in step #5 - ' + e + '\n');
+                                reject( e );
+                            } else {
+                                console.log( 'step #5 - completed' );
+                                resolve();
+                            }
+                        });
+                    } else {
+                        console.log( 'step #5 - completed' );
+                        resolve();
+                    }
+                });
+            } else {
+                console.log( 'Error in step #5 - ' + e + '\n' );
+                reject();
+            }
+        });
+
+    });
+}
+
+function rebaseDb() {
+    return new Promise( function( resolve, reject ) {
+        var proc = spawn( 'grunt', [ 'db' ], { stdio: 'inherit', cwd: path.resolve( path.join( __dirname, '..' ) ) } );
+
+        console.log( 'step #6 - rebase db' );
+
+        proc.stderr.on('data', function (data) {
+            console.log( 'Error in step #6 - ' + data.toString() + '\n');
+            reject ( data.toString() );
+        });
+
+        proc.on('close', function (code) {
+            console.log('step #6 process exited with code ' + code + '\n' );
+            resolve();
+        });
+    });
+}
+
 createProject()
     .then( copyOrmModule )
     .then( cleverSetup )
     .then( configureOrmModule )
+    .then( installTestModule )
+    .then( rebaseDb )
     .catch( function (err) {
         console.log('Error - ' + err );
     });
