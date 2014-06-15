@@ -16,6 +16,7 @@ before_script:
   - export NODE_ENV=test
   - export NODE_PATH=./lib/:./modules/
   - node tests/before_travis_test.js
+  - node testProject/tests/before_travis_test.js
   - cd testProject
 
 services:
