@@ -22,7 +22,7 @@ moduleLdr.on( 'modulesLoaded', function() {
             var ModelType = models[ modelName.replace( 'Model', '' ) ]
               , Models = seedData[ modelName ];
 
-            if ( !ModelType || !Models ) {
+            if ( !ModelType || !Models || ModelType.type !== 'ORM' ) {
                 return cb();
             }
 

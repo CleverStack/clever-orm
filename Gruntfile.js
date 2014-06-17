@@ -1,7 +1,9 @@
 'use strict';
 
-var fs      = require( 'fs' )
-,   path    = require( 'path' )
+var fs          = require( 'fs' )
+  , path        = require( 'path' )
+  , pkgJson     = require( path.resolve( path.join( __dirname, '..', '..', 'package.json') ) )
+  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1;
 
 module.exports = function( grunt ) {
     // Arguments for individual module rebase/seed
@@ -58,10 +60,10 @@ module.exports = function( grunt ) {
             }
         },
         exec: {
-            rebase: {
+            ormRebase: {
                 cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js " + dbTarget
             },
-            seed: {
+            ormSeed: {
                 cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/seedModels.js " + dbTarget
             }
         }
@@ -69,11 +71,21 @@ module.exports = function( grunt ) {
         grunt.loadNpmTasks('grunt-prompt');
 
         // Register each command
-        grunt.registerTask( 'db:rebase', [ 'exec:rebase' ] );
-        grunt.registerTask( 'db:seed', [ 'exec:seed' ] );
+        grunt.registerTask( 'db:ormRebase', [ 'exec:ormRebase' ] );
+        grunt.registerTask( 'db:ormSeed', [ 'exec:ormSeed' ] );
+        
+        // Register grouped command
+        grunt.registerTask( 'db:orm', [ 'db:ormRebase', 'db:ormSeed' ] );
 
-        // Register db command (runs one after the other)
-        grunt.registerTask( 'db', [ 'db:rebase', 'db:seed' ] );
+        if ( odmEnabled ) {
+            grunt.registerTask( 'db:rebase', [ 'db:ormRebase', 'db:odmRebase' ] );
+            grunt.registerTask( 'db:seed', [ 'db:ormSeed', 'db:odmSeed' ] );
+            grunt.registerTask( 'db', [ 'db:rebase', 'db:seed' ] );
+        } else {
+            grunt.registerTask( 'db:rebase', [ 'db:ormRebase' ] );
+            grunt.registerTask( 'db:seed', [ 'db:ormSeed' ] );
+            grunt.registerTask( 'db', [ 'db:orm' ] );
+        }
 
         grunt.registerTask( 'readme', 'Displays helpful information', function ( ) {
             console.log( 'Installation instructions:' );
