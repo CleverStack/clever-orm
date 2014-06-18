@@ -1,9 +1,11 @@
 'use strict';
 
 var fs          = require( 'fs' )
+  , os          = require( 'os' )
   , path        = require( 'path' )
   , pkgJson     = require( path.resolve( path.join( __dirname, '..', '..', 'package.json') ) )
-  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1;
+  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1
+  , isWin       = /^win32/.test( os.platform() );
 
 module.exports = function( grunt ) {
     // Arguments for individual module rebase/seed
@@ -61,10 +63,10 @@ module.exports = function( grunt ) {
         },
         exec: {
             ormRebase: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/rebase.js " + dbTarget
+                cmd: "NODE_PATH=" + [ './lib/', './modules/' ].join( isWin ? ';' : ':' ) + "; node modules/clever-orm/bin/rebase.js " + dbTarget
             },
             ormSeed: {
-                cmd: "NODE_PATH=./lib/:./modules/; node modules/clever-orm/bin/seedModels.js " + dbTarget
+                cmd: "NODE_PATH=" + [ './lib/', './modules/' ].join( isWin ? ';' : ':' ) + "; node modules/clever-orm/bin/seedModels.js " + dbTarget
             }
         }
     }, function( grunt ) {
