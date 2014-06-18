@@ -64,7 +64,7 @@ module.exports = Module.extend({
         var parseDebug = this.proxy(function( msg ) { 
                 this.debug( Static._name + 'Model: ' + msg ); 
             })
-          , sequelizeConf = {}
+          , sequelizeConf = { paranoid: false, timestamps: false }
           , fields = {};
 
         if ( this.models[ Static._name ] !== undefined ) {
@@ -76,8 +76,10 @@ module.exports = Module.extend({
         Object.keys( Static._schema ).forEach( this.proxy( 'parseSchemaField', Static, fields ) );
     
         parseDebug( 'Configuring static object for sequelize...' );
-        sequelizeConf.paranoid = Static.softDeletable;
-        sequelizeConf.timestamps = Static.timeStampable;
+
+        this.setupOptions( parseDebug, sequelizeConf, Static );
+
+        this.setupBehaviours( parseDebug, sequelizeConf, Static );
 
         parseDebug( 'Setting sequelize as the _db (adapter) for the Model...' );
         Static._db = this.sequelize;
@@ -89,6 +91,64 @@ module.exports = Module.extend({
         this.models[ Static._name ] = model;
 
         return model;
+    },
+
+    setupOptions: function( parseDebug, sequelizeConf, Static ) {
+        parseDebug( 'Setup options...' );
+
+        if ( Static.dbName !== false  ) {
+            parseDebug( 'Setting dbName=' + Static.dbName + ' (sequelize tableName option)...' );
+            sequelizeConf.tableName = Static.dbName;
+        }
+
+        if ( Static.freezeDbName !== false ) {
+            parseDebug( 'Setting freezeDbName=' + Static.freezeDbName + ' (sequelize freezeTableName option)...' );
+            sequelizeConf.freezeTableName = Static.freezeDbName;
+        }
+
+        if ( Static.underscored !== undefined ) {
+            parseDebug( 'Setting underscored=' + Static.underscored + '...' );
+            sequelizeConf.underscored = Static.underscored;
+        }
+
+        if ( Static.engine !== false ) {
+            parseDebug( 'Setting engine=' + Static.engine + '...' );
+            sequelizeConf.engine = Static.engine;
+        }
+
+        if ( Static.charset !== false  ) {
+            parseDebug( 'Setting charset=' + Static.charset + '...' );
+            sequelizeConf.charset = Static.charset;
+        }
+
+        if ( Static.comment !== false  ) {
+            parseDebug( 'Setting comment=' + Static.comment + '...' );
+            sequelizeConf.comment = Static.comment;
+        }
+
+        if ( Static.collate !== false  ) {
+            parseDebug( 'Setting collate=' + Static.collate + '...' );
+            sequelizeConf.collate = Static.collate;
+        }
+    },
+
+    setupBehaviours: function( parseDebug, sequelizeConf, Static ) {
+        parseDebug( 'Setup behaviours...' );
+
+        if ( !!Static.softDeletable ) {
+            parseDebug( 'is softDeletable (' + Static.deletedAt + ')' );
+
+            sequelizeConf.paranoid = Static.softDeletable;
+            sequelizeConf.deletedAt = Static.deletedAt;
+        }
+
+        if ( !!Static.timeStampable ) {
+            parseDebug( 'is timeStampable (' + Static.timeStampable + ')' );
+
+            sequelizeConf.timestamps = Static.timeStampable;
+            sequelizeConf.createdAt = Static.createdAt;
+            sequelizeConf.updatedAt = Static.updatedAt;
+        }
     },
 
     parseSchemaField: function( Static, fields, name ) {
