@@ -1,11 +1,9 @@
 'use strict';
 
 var fs          = require( 'fs' )
-  , os          = require( 'os' )
   , path        = require( 'path' )
   , pkgJson     = require( path.resolve( path.join( __dirname, '..', '..', 'package.json') ) )
-  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1
-  , isWin       = /^win32/.test( os.platform() );
+  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1;
 
 module.exports = function( grunt ) {
     // Arguments for individual module rebase/seed
