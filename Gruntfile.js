@@ -63,10 +63,10 @@ module.exports = function( grunt ) {
         },
         exec: {
             ormRebase: {
-                cmd: "NODE_PATH=" + [ './lib/', './modules/' ].join( isWin ? ';' : ':' ) + "; node modules/clever-orm/bin/rebase.js " + dbTarget
+                cmd: "node modules/clever-orm/bin/rebase.js " + dbTarget
             },
             ormSeed: {
-                cmd: "NODE_PATH=" + [ './lib/', './modules/' ].join( isWin ? ';' : ':' ) + "; node modules/clever-orm/bin/seedModels.js " + dbTarget
+                cmd: "node modules/clever-orm/bin/seedModels.js " + dbTarget
             }
         }
     }, function( grunt ) {
