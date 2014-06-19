@@ -172,7 +172,7 @@ module.exports = Module.extend({
         fieldDefinition.type = this.getFieldType( Static, options );
 
         // Handle options
-        [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'required', 'validate', 'default', 'comment' ].forEach(function( optionName ) {
+        [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'default', 'comment' ].forEach(function( optionName ) {
             if ( options[ optionName ] !== undefined ) {
                 if ( optionName === 'primaryKey' ) {
                     Static.primaryKey = name;
