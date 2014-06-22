@@ -11,7 +11,7 @@ module.exports = function( grunt ) {
 
     return [{
         prompt: {
-            cleverstack: {
+            cleverOrmConfigPrompt: {
                 options: {
                     questions: [
                         {
@@ -95,8 +95,8 @@ module.exports = function( grunt ) {
             console.log( 'The database tables for your modules should now be installed and seeded with data!' );
         } );
 
-        grunt.registerTask( 'prompt:clever', [ 'prompt:cleverstack', 'createConfig' ] );
-        grunt.registerTask( 'createConfig', 'Creates a .json config file for database credentials', function ( ) {
+        grunt.registerTask( 'prompt:cleverOrmConfig', [ 'prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig' ] );
+        grunt.registerTask( 'cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function ( ) {
             var conf = grunt.config( 'cleverstackorm' )
               , obj  = {
                     'clever-orm': { db: { options: {} } }
