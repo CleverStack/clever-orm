@@ -100,8 +100,13 @@ moduleLdr.on( 'modulesLoaded', function() {
             );
         },
         function forEachModelTypeComplete( err ) {
-            console.log( err ? 'Error: ' : 'Seed completed with no errors', err );
-            env.moduleLoader.shutdown();
+            if ( err === null ) {
+                console.log( 'Seed completed with no errors' );
+                process.exit( 0 );
+            } else {
+                console.log( err );
+                process.exit( 1 );
+            }
         }
     );
 });

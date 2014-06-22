@@ -36,10 +36,10 @@ moduleLdr.on( 'modulesLoaded', function() {
         function shutdown( err ) {
             if ( err === null ) {
                 console.log( 'Database is rebased' );
-                env.moduleLoader.shutdown();
+                process.exit( 0 );
             } else {
                 console.error('Error ' + env.config['clever-orm'].db.options.dialect, err);
-                env.moduleLoader.shutdown();
+                process.exit( 1 );
             }
         }
     );
