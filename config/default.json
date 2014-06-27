@@ -1,8 +1,8 @@
 {
     "clever-orm": {
         "db": {
-            "username": "john",
-            "password": "secret",
+            "username": "root",
+            "password": "",
             "database": "nodeseed",
             "options": {
                 "host": "localhost",
