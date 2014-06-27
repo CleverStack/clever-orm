@@ -1,41 +1,45 @@
 {
-  "name": "clever-orm",
-  "version": "1.0.8",
-  "dependencies": {
-    "mysql": "2.0.0-rc2",
-    "sequelize": "^1.7.x"
-  },
-  "scripts": {
-    "test": "grunt test:unit"
-  },
-  "author": {
-    "name": "CleverStack",
-    "email": "admin@cleverstack.io",
-    "web": "http://cleverstack.io"
-  },
-  "collaborators": [
-    "Richard Gustin <richard.gustin86@gmail.com>"
-  ],
-  "description": "CleverStack ORM (SQL) Module",
-  "keywords": [
-    "cleverstack",
-    "cleverstack-module",
-    "cleverstack-backend",
-    "orm",
-    "sequelize",
-    "clevertech",
-    "backend"
-  ],
-  "main": "module.js",
-  "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-prompt": "~1.1.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CleverStack/clever-orm.git"
-  },
-  "bugs": {
-    "url": "https://github.com/CleverStack/clever-orm/issues"
-  }
+    "name": "clever-orm",
+    "description": "CleverStack ORM (SQL) Module",
+    "version": "1.0.9",
+    "main": "module.js",
+    "author": {
+        "name": "CleverStack",
+        "email": "admin@cleverstack.io",
+        "web": "http://cleverstack.io"
+    },
+    "collaborators": [
+        "Richard Gustin <richard.gustin86@gmail.com>"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/CleverStack/clever-orm.git"
+    },
+    "bugs": {
+        "url": "https://github.com/CleverStack/clever-orm/issues"
+    },
+    "keywords": [
+        "cleverstack",
+        "cleverstack-module",
+        "cleverstack-backend",
+        "orm",
+        "sequelize",
+        "backend",
+        "mysql",
+        "postgre",
+        "sqlite",
+        "dao"
+    ],
+    "license": "BSD-2-Clause",
+    "dependencies": {
+        "mysql": "2.0.0-rc2",
+        "sequelize": "^1.7.x"
+    },
+    "devDependencies": {
+        "grunt": "~0.4.2",
+        "grunt-prompt": "~1.1.0"
+    },
+    "scripts": {
+        "test": "grunt test:unit"
+    }
 }
