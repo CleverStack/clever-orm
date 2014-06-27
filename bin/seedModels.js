@@ -100,7 +100,7 @@ moduleLdr.on( 'modulesLoaded', function() {
             );
         },
         function forEachModelTypeComplete( err ) {
-            if ( err === null ) {
+            if ( err === null || err === undefined ) {
                 console.log( 'Seed completed with no errors' );
                 process.exit( 0 );
             } else {
