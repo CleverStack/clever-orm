@@ -139,7 +139,7 @@ function configureOrmModule() {
                 { reg: /Database port/     , write: '3306\n'     , done: false },
                 { reg: /Database host/     , write: '127.0.0.1\n', done: false },
             ]
-          , proc = spawn ( 'grunt', [ 'prompt:clever' ], { cwd: path.resolve( path.join( __dirname, '..', prName ) ) } );
+          , proc = spawn ( 'grunt', [ 'prompt:cleverOrmConfig' ], { cwd: path.resolve( path.join( __dirname, '..', prName ) ) } );
 
         console.log( 'step #4 - install clever-orm module - begin\n' );
 
@@ -218,7 +218,7 @@ function rebaseDb() {
 
         proc.stderr.on('data', function (data) {
             console.log( 'Error in step #6 - ' + data.toString() + '\n');
-            reject ( data.toString() );
+            reject( data.toString() );
         });
 
         proc.on('close', function (code) {
