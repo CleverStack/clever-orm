@@ -4,6 +4,7 @@ var path        = require( 'path' )
   , utils       = require( 'utils' )
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader
+  , _           = require( 'underscore' )
   , inflect     = require( 'i' )();
 
 // Seed once our modules have loaded
@@ -16,89 +17,110 @@ moduleLdr.on( 'modulesLoaded', function() {
         assocMap[ modelName ] = [];
     });
 
-    async.forEachSeries(
-        Object.keys( seedData ),
-        function forEachModelType( modelName, cb ) {
-            var ModelType = models[ modelName.replace( 'Model', '' ) ]
-              , Models = seedData[ modelName ];
 
-            if ( !ModelType || !Models || ModelType.type !== 'ORM' ) {
-                return cb();
-            }
+    async.waterfall(
+        [
+            function createModels( callback ) {
+                async.forEach(
+                    Object.keys( seedData ),
+                    function forEachSeedDataModel( modelName, cb ) {
+                        var ModelType = models[ modelName.replace( 'Model', '' ) ]
+                          , Models = seedData[ modelName ];
 
-            async.forEachSeries(
-                Models,
-                function forEachModel( data, modelCb ) {
-                    var assocs = data.associations;
-                    delete data.associations;
+                        if ( !ModelType || !Models || ModelType.type !== 'ORM' ) {
+                            return cb();
+                        }
 
-                    ModelType.create( data )
-                        .then(function( model ) {
-                            data.associations = assocs;
+                        async.forEach(
+                            Models,
+                            function createModel( modelData, modelCb ) {
+                                var data = _.clone( modelData );
+                                delete data.associations;
 
-                            console.log( 'Created ' + modelName );
-                            assocMap[ modelName ].push( model );
-                            if ( data.associations !== undefined ) {
-                                var assocLength = Object.keys( data.associations ).length
-                                  , called      = 0;
+                                ModelType
+                                    .create( data )
+                                    .then(function( model ) {
+                                        console.log( 'Created ' + modelName );
+                                        assocMap[ modelName ].push( model );
+                                        modelData.id = model.id;
+                                        modelCb( null );
+                                    })
+                                    .catch( modelCb );
+                            },
+                            cb
+                        );
+                    },
+                    callback
+                )
+            },
+            function associateModels( callback ) {
+                async.forEach(
+                    Object.keys( seedData ),
+                    function forEachSeedDataModel( modelName, cb ) {
+                        var ModelType = models[ modelName.replace( 'Model', '' ) ]
+                          , Models = seedData[ modelName ];
 
-                                Object.keys( data.associations ).forEach( function( assocModelName ) {
-                                    var required     = data.associations[ assocModelName ]
-                                      , associations = [];
+                        if ( !ModelType || !Models || ModelType.type !== 'ORM' ) {
+                            return cb();
+                        }
 
-                                    assocMap[ assocModelName ].forEach( function( m ) {
-                                        var isMatched = null;
+                        async.forEach(
+                            Models,
+                            function associateModel( data, modelCb ) {
+                                if ( data.associations !== undefined ) {
+                                    var assocLength = Object.keys( data.associations ).length
+                                      , called      = 0
+                                      , model       = _.findWhere( assocMap[ modelName ], { id: data.id } );
 
-                                        Object.keys( required ).forEach( function( reqKey ) {
-                                            if ( isMatched !== false ) {
-                                                if ( m[ reqKey ] === required[ reqKey ] ) {
-                                                    isMatched = true;
-                                                } else {
-                                                    isMatched = false;
-                                                }
+                                    Object.keys( data.associations ).forEach( function( assocModelName ) {
+                                        var required     = data.associations[ assocModelName ]
+                                          , associations = [];
+
+                                        required.forEach( function( requiredModels ) {
+                                            if ( typeof requiredModels !== 'array' ) {
+                                                requiredModels = [ requiredModels ];
                                             }
+                                            requiredModels.forEach( function( requiredModel ) {
+                                                if ( ( associatedModel = _.findWhere( assocMap[ assocModelName ], requiredModel )) !== undefined ) {
+                                                    associations.push( associatedModel );
+                                                }
+                                            });
                                         });
 
-                                        if ( isMatched ) {
-                                            associations.push( m );
+
+                                        if ( associations.length ) {
+                                            var funcName = 'set' + inflect.pluralize( assocModelName.replace( /(Model)$/g,'' ) );
+
+                                            // Handle hasOne
+                                            if ( typeof model._model[ funcName ] !== 'function' ) {
+                                                funcName = 'set' + assocModelName.replace( /(Model)$/g,'' );
+                                                associations = associations[ 0 ];
+                                            }
+                                            console.log( 'Calling ' + funcName );
+                                            model._model[ funcName ]( associations )
+                                                .success(function() {
+                                                    called++;
+
+                                                    if ( called == assocLength ) {
+                                                        modelCb( null );
+                                                    }
+                                                })
+                                                .error( modelCb );
+                                        } else {
+                                            modelCb( null );
                                         }
                                     });
-
-                                    if ( associations.length ) {
-                                        var funcName = 'set' + inflect.pluralize( assocModelName );
-
-                                        // Handle hasOne
-                                        if ( typeof model[ funcName ] !== 'function' ) {
-                                            funcName = 'set' + assocModelName;
-                                            associations = associations[ 0 ];
-                                        }
-                                        
-                                        // strip "Model" from funcName
-                                        funcName = funcName.replace( /(Model)$/g,'' );
-
-                                        console.log( 'Calling ' + funcName );
-                                        model[ funcName ]( associations )
-                                            .success(function() {
-                                                called++;
-
-                                                if ( called == assocLength ) {
-                                                    modelCb( null );
-                                                }
-                                            })
-                                            .error( modelCb );
-                                    }
-                                });
-                            } else {
-                                modelCb( null );
-                            }
-                        })
-                        .catch( modelCb );
-                },
-                function forEachModelComplete( err ) {
-                    cb( err );
-                }
-            );
-        },
+                                } else {
+                                    modelCb( null );
+                                }
+                            },
+                            cb
+                        );
+                    },
+                    callback
+                )
+            }
+        ],
         function forEachModelTypeComplete( err ) {
             if ( err === null || err === undefined ) {
                 console.log( 'Seed completed with no errors' );
