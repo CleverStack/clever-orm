@@ -1,7 +1,7 @@
 {
     "name": "clever-orm",
     "description": "CleverStack ORM (SQL) Module",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "main": "module.js",
     "author": {
         "name": "CleverStack",
