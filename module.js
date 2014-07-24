@@ -1,7 +1,9 @@
 var injector    = require( 'injector' )
   , Sequelize   = require( 'sequelize' )
   , Module      = require( 'classes' ).Module
-  , Model       = require( 'classes' ).Model;
+  , Model       = require( 'classes' ).Model
+  , Promise     = require( 'bluebird' )
+  , i           = require( 'i' )();
 
 module.exports = Module.extend({
 
@@ -11,6 +13,10 @@ module.exports = Module.extend({
 
     preSetup: function() {
         this.debug( 'Opening database connection to ' + this.config.db.options.dialect + '...' );
+
+        if ( !!this.config.db.options.logging ) {
+            this.config.db.options.logging = console.log;
+        }
 
         this.sequelize = new Sequelize(
             this.config.db.database,
@@ -37,6 +43,66 @@ module.exports = Module.extend({
 
         Object.keys( this.config.modelAssociations ).forEach( this.proxy( function( modelName ) {
             Object.keys( this.config.modelAssociations[ modelName ] ).forEach( this.proxy( 'defineModelAssociations', modelName ) );
+        }));
+
+        var models  = require( 'models' );
+
+        Object.keys( this.models ).forEach( this.proxy( function( modelName ) {
+            var model = this.models[ modelName ]
+              , Model = models[ modelName ];
+
+            Object.keys( model.associations ).forEach( this.proxy( function( assocationName ) {
+                var association = model.associations[ assocationName ];
+
+                models[ association.source.name ]._getters[ association.identifier ] = function() {
+                    if ( association.identifier === 'id' && Model.type.toLowerCase() === 'odm' ) {
+                        return this._model._id;
+                    } else {
+                        return this._model[ association.identifier ];
+                    }
+                }
+
+                var as = i.camelize( i[ association.associationType === 'HasMany' ? 'pluralize' : 'singularize' ]( association.as ), false );
+                models[ association.source.name ]._getters[ as ] = function() {
+                    return this._model[ as ];
+                }
+
+                models[ association.source.name ]._setters[ association.identifier ] = function( val ) {
+                    this._model[ association.identifier ] = val;
+                };
+
+                Object.keys( association.accessors ).forEach( function( accessorName ) {
+                    var accessor = association.accessors[ accessorName ];
+
+                    if ( typeof model.DAO.prototype[ accessor ] === 'function' ) {
+                        Model.prototype[ accessor ] = function( options ) {
+                            return new Promise( function( resolve, reject ) {
+                                if ( !/has/.test( accessor ) ) {
+                                    options = options || {};
+
+                                    this._model[ accessor ]( options )
+                                        .success( function( _model ) {
+                                            if ( _model instanceof Array ) {
+                                                var wrappedModels = [];
+                                                
+                                                _model.forEach( function( m ) {
+                                                    wrappedModels.push( new ( models[ association.target.name ] )( m ) );
+                                                });
+                                                
+                                                resolve( wrappedModels );
+                                            } else {
+                                                resolve( new ( models[ association.target.name ] )( _model ) );
+                                            }
+                                        })
+                                        .error( reject );
+                                } else {
+                                    this._model[ accessor ].success( resolve ).error( reject );
+                                }
+                            }.bind( this ))
+                        }
+                    }
+                });
+            }));
         }));
     },
 

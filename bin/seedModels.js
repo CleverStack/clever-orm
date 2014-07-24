@@ -17,7 +17,6 @@ moduleLdr.on( 'modulesLoaded', function() {
         assocMap[ modelName ] = [];
     });
 
-
     async.waterfall(
         [
             function createModels( callback ) {
@@ -54,7 +53,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                 )
             },
             function associateModels( callback ) {
-                async.forEach(
+                async.forEachSeries(
                     Object.keys( seedData ),
                     function forEachSeedDataModel( modelName, cb ) {
                         var ModelType = models[ modelName.replace( 'Model', '' ) ]
@@ -64,7 +63,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                             return cb();
                         }
 
-                        async.forEach(
+                        async.forEachSeries(
                             Models,
                             function associateModel( data, modelCb ) {
                                 if ( data.associations !== undefined ) {
@@ -76,13 +75,17 @@ moduleLdr.on( 'modulesLoaded', function() {
                                         var required     = data.associations[ assocModelName ]
                                           , associations = [];
 
+                                        if ( !( required instanceof Array ) ) {
+                                            required = [ required ];
+                                        }
+
                                         required.forEach( function( requiredModels ) {
                                             if ( typeof requiredModels !== 'array' ) {
                                                 requiredModels = [ requiredModels ];
                                             }
                                             requiredModels.forEach( function( requiredModel ) {
                                                 if ( ( associatedModel = _.findWhere( assocMap[ assocModelName ], requiredModel )) !== undefined ) {
-                                                    associations.push( associatedModel );
+                                                    associations.push( associatedModel._model );
                                                 }
                                             });
                                         });
@@ -96,16 +99,17 @@ moduleLdr.on( 'modulesLoaded', function() {
                                                 funcName = 'set' + assocModelName.replace( /(Model)$/g,'' );
                                                 associations = associations[ 0 ];
                                             }
-                                            console.log( 'Calling ' + funcName );
-                                            model._model[ funcName ]( associations )
-                                                .success(function() {
+
+                                            console.log( 'Calling ' + modelName + '.' + funcName + '()' );
+                                            model[ funcName ]( associations )
+                                                .then(function() {
                                                     called++;
 
                                                     if ( called == assocLength ) {
                                                         modelCb( null );
                                                     }
                                                 })
-                                                .error( modelCb );
+                                                .catch( modelCb );
                                         } else {
                                             modelCb( null );
                                         }
