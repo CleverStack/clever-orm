@@ -5,6 +5,7 @@ var path        = require( 'path' )
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader
   , _           = require( 'underscore' )
+  , config      = require( 'config' )
   , inflect     = require( 'i' )();
 
 // Seed once our modules have loaded
@@ -92,6 +93,21 @@ moduleLdr.on( 'modulesLoaded', function() {
 
 
                                         if ( associations.length ) {
+                                            assocModelName = assocModelName.replace( /(Model)$/g, '' );
+                                            var assocConfig = config[ 'clever-orm' ].modelAssociations[  modelName.replace( /(Model)$/g, '' ) ];
+                                            Object.keys( assocConfig ).every( function( associatedModelType ) {
+                                                assocConfig[ associatedModelType ].forEach( function( _model ) {
+                                                    _model = _model instanceof Array ? _model : [ _model, {} ];
+
+                                                    if ( assocModelName === _model[ 0 ] ) {
+                                                        assocModelName = inflect.camelize( _model[ 1 ].as ? _model[ 1 ].as : _model[ 0 ] );
+                                                        return false;
+                                                    }
+
+                                                    return true;
+                                                });
+                                            });
+
                                             var funcName = 'set' + inflect.pluralize( assocModelName.replace( /(Model)$/g,'' ) );
 
                                             // Handle hasOne
