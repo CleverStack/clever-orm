@@ -1,11 +1,16 @@
 var injector    = require( 'injector' )
+  , util        = require( 'util' )
   , utils       = require( 'utils' )
   , async       = require( 'async' )
   , config      = require( 'config' )
   , path        = require( 'path' )
+  , fs          = require( 'fs' )
   , ormUtils    = require( path.resolve( path.join( __dirname, '..', 'lib', 'utils.js' ) ) )
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader;
+
+console.log( 'Using configuration:' );
+console.log( util.inspect( config[ 'clever-orm' ].modelAssociations ) );
 
 // Rebase once our modules have loaded
 moduleLdr.on( 'modulesLoaded', function() {
@@ -31,6 +36,27 @@ moduleLdr.on( 'modulesLoaded', function() {
                         callback( null );
                     })
                     .error( callback );
+            },
+
+            function runDialectSqlFile( callback ) {
+                var dialectSqlFile = path.resolve( path.join( __dirname, '..', '..', '..', 'schema', config[ 'clever-orm' ].db.options.dialect + '.sql' ) );
+                
+                if ( fs.existsSync( dialectSqlFile ) ) {
+                    fs.readFile( dialectSqlFile, function( err, sql ) {
+                        if ( err || !sql ) {
+                            console.log( 'No specific dialect SQL found continuing...' );
+                            return callback();
+                        }
+
+                        console.log( 'Running dialect specific SQL' );
+                        sequelize.query( sql.toString(), null, { raw: true } ).success(function() {
+                            callback( null );
+                        })
+                        .error( callback );
+                    });
+                } else {
+                    callback( null );
+                }
             }
         ],
         function shutdown( err ) {
