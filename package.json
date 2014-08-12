@@ -1,22 +1,22 @@
 {
-    "name": "clever-orm",
-    "description": "CleverStack ORM (SQL) Module",
-    "version": "1.0.10",
-    "main": "module.js",
+    "name":         "clever-orm",
+    "description":  "CleverStack ORM (SQL) Module",
+    "version":      "1.0.11",
+    "main":         "module.js",
     "author": {
-        "name": "CleverStack",
-        "email": "admin@cleverstack.io",
-        "web": "http://cleverstack.io"
+        "name":     "CleverStack",
+        "email":    "admin@cleverstack.io",
+        "web":      "http://cleverstack.io"
     },
     "collaborators": [
         "Richard Gustin <richard.gustin86@gmail.com>"
     ],
     "repository": {
-        "type": "git",
-        "url": "https://github.com/CleverStack/clever-orm.git"
+        "type":     "git",
+        "url":      "https://github.com/CleverStack/clever-orm.git"
     },
     "bugs": {
-        "url": "https://github.com/CleverStack/clever-orm/issues"
+        "url":      "https://github.com/CleverStack/clever-orm/issues"
     },
     "keywords": [
         "cleverstack",
@@ -30,16 +30,16 @@
         "sqlite",
         "dao"
     ],
-    "license": "BSD-2-Clause",
+    "license":      "BSD-2-Clause",
     "dependencies": {
-        "mysql": "2.0.0-rc2",
-        "sequelize": "^1.7.x"
+        "mysql":        "2.0.0-rc2",
+        "sequelize":    "^1.7.x"
     },
     "devDependencies": {
-        "grunt": "~0.4.2",
+        "grunt":        "~0.4.2",
         "grunt-prompt": "~1.1.0"
     },
     "scripts": {
-        "test": "grunt test:unit"
+        "test":     "grunt test:unit"
     }
 }
