@@ -82,17 +82,7 @@ module.exports = Module.extend({
 
                                     this._model[ accessor ]( options )
                                         .success( function( _model ) {
-                                            if ( _model instanceof Array ) {
-                                                var wrappedModels = [];
-                                                
-                                                _model.forEach( function( m ) {
-                                                    wrappedModels.push( new ( models[ association.target.name ] )( m ) );
-                                                });
-                                                
-                                                resolve( wrappedModels );
-                                            } else {
-                                                resolve( new ( models[ association.target.name ] )( _model ) );
-                                            }
+                                            resolve( _model );
                                         })
                                         .error( reject );
                                 } else {
