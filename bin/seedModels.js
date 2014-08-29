@@ -34,13 +34,18 @@ moduleLdr.on( 'modulesLoaded', function() {
                         async.forEach(
                             Models,
                             function createModel( modelData, modelCb ) {
-                                var data = _.clone( modelData );
+                                var data         = _.clone( modelData )
+                                  , associations = data.associations;
+
                                 delete data.associations;
 
                                 ModelType
                                     .create( data )
                                     .then(function( model ) {
                                         console.log( 'Created ' + modelName );
+                                        if ( associations ) {
+                                            model.associations = associations;
+                                        }
                                         assocMap[ modelName ].push( model );
                                         modelData.id = model.id;
                                         modelCb( null );
@@ -84,6 +89,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                                             if ( typeof requiredModels !== 'array' ) {
                                                 requiredModels = [ requiredModels ];
                                             }
+                                            
                                             requiredModels.forEach( function( requiredModel ) {
                                                 if ( ( associatedModel = _.findWhere( assocMap[ assocModelName ], requiredModel )) !== undefined ) {
                                                     associations.push( associatedModel._model );
