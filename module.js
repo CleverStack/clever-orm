@@ -3,6 +3,7 @@ var injector    = require( 'injector' )
   , Module      = require( 'classes' ).Module
   , Model       = require( 'classes' ).Model
   , Promise     = require( 'bluebird' )
+  , _           = require( 'underscore' )
   , i           = require( 'i' )();
 
 module.exports = Module.extend({
@@ -75,12 +76,13 @@ module.exports = Module.extend({
                     var accessor = association.accessors[ accessorName ];
 
                     if ( typeof model.DAO.prototype[ accessor ] === 'function' ) {
-                        Model.prototype[ accessor ] = function( options ) {
+                        Model.prototype[ accessor ] = function( where, options ) {
                             return new Promise( function( resolve, reject ) {
                                 if ( !/has/.test( accessor ) ) {
-                                    options = options || {};
+                                    where   = where || {};
+                                    options = options ? _.clone( options ) : {};
 
-                                    this._model[ accessor ]( options )
+                                    this._model[ accessor ]( where, options )
                                         .success( function( _model ) {
                                             resolve( _model );
                                         })
@@ -136,6 +138,10 @@ module.exports = Module.extend({
         this.setupOptions( parseDebug, sequelizeConf, Static );
 
         this.setupBehaviours( parseDebug, sequelizeConf, Static );
+
+        // @TODO this is a templ hack to get functions available for queries
+        Static.fn = this.sequelize.fn;
+        Static.col = this.sequelize.col;
 
         parseDebug( 'Setting sequelize as the _db (adapter) for the Model...' );
         Static._db = this.sequelize;
