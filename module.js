@@ -63,7 +63,7 @@ module.exports = Module.extend({
                     }
                 }
 
-                var as = i.camelize( i[ association.associationType === 'HasMany' ? 'pluralize' : 'singularize' ]( association.as ), false );
+                var as = i[ association.associationType === 'HasMany' ? 'pluralize' : 'singularize' ]( association.as );
                 models[ association.source.name ]._getters[ as ] = function() {
                     return this._model[ as ];
                 }
@@ -81,6 +81,14 @@ module.exports = Module.extend({
                                 if ( !/has/.test( accessor ) ) {
                                     where   = where || {};
                                     options = options ? _.clone( options ) : {};
+
+                                    if ( where._model ) {
+                                        where = where._model;
+                                    } else if ( where instanceof Array && where[ 0 ]._model ) {
+                                        where = where.map( function( _model ) {
+                                            return _model._model;
+                                        });
+                                    }
 
                                     this._model[ accessor ]( where, options )
                                         .success( function( _model ) {
@@ -111,6 +119,11 @@ module.exports = Module.extend({
         // Support second argument
         if ( assocTo instanceof Array ) {
             this.debug( '%s %s %s with second argument of ', modelName, assocType, assocTo[0], assocTo[1] );
+
+            if ( assocTo[ 1 ].through ) {
+                assocTo[ 1 ].through =  this.models[ assocTo[ 1 ].through.replace( 'Model', '' ) ];
+            }
+
             this.models[ modelName ][ assocType ]( this.models[ assocTo[0] ], assocTo[1] );
         } else {
             this.debug( '%s %s %s', modelName, assocType, assocTo );
