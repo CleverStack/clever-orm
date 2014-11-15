@@ -33,7 +33,7 @@
     "license":      "BSD-2-Clause",
     "dependencies": {
         "mysql":        "2.0.0-rc2",
-        "sequelize":    "^1.7.x"
+        "sequelize":    "~2.0.0-rc1"
     },
     "devDependencies": {
         "grunt":        "~0.4.2",
