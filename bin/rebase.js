@@ -23,19 +23,19 @@ moduleLdr.on( 'modulesLoaded', function() {
                 var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + config[ 'clever-orm' ].db.database;
 
                 sequelize.query( query, { raw: true } )
-                    .success( function() {
+                    .then( function() {
                         callback( null );
                     })
-                    .error( callback );
+                    .catch( callback );
             },
 
             function rebaseDatabase( callback ) {
                 sequelize
                     .sync( { force: true } )
-                    .success( function() {
+                    .then( function() {
                         callback( null );
                     })
-                    .error( callback );
+                    .catch( callback );
             },
 
             function runDialectSqlFile( callback ) {
@@ -49,10 +49,10 @@ moduleLdr.on( 'modulesLoaded', function() {
                         }
 
                         console.log( 'Running dialect specific SQL' );
-                        sequelize.query( sql.toString(), null, { raw: true } ).success(function() {
+                        sequelize.query( sql.toString(), null, { raw: true } ).then(function() {
                             callback( null );
                         })
-                        .error( callback );
+                        .catch( callback );
                     });
                 } else {
                     callback( null );
