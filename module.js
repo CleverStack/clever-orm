@@ -91,12 +91,12 @@ module.exports = Module.extend({
                                     }
 
                                     this._model[ accessor ]( where, options )
-                                        .success( function( _model ) {
+                                        .then( function( _model ) {
                                             resolve( _model );
                                         })
-                                        .error( reject );
+                                        .catch( reject );
                                 } else {
-                                    this._model[ accessor ].success( resolve ).error( reject );
+                                    this._model[ accessor ].then( resolve ).catch( reject );
                                 }
                             }.bind( this ))
                         }
