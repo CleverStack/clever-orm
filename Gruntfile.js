@@ -3,7 +3,8 @@
 var fs          = require( 'fs' )
   , path        = require( 'path' )
   , pkgJson     = require( path.resolve( path.join( __dirname, '..', '..', 'package.json') ) )
-  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1;
+  , odmEnabled  = pkgJson.bundledDependencies.indexOf( 'clever-odm' ) !== -1
+  , _           = require( 'underscore' );
 
 module.exports = function( grunt ) {
     // Arguments for individual module rebase/seed
@@ -97,15 +98,13 @@ module.exports = function( grunt ) {
 
         grunt.registerTask( 'prompt:cleverOrmConfig', [ 'prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig' ] );
         grunt.registerTask( 'cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function ( ) {
-            var conf = grunt.config( 'cleverstackorm' )
-              , obj  = {
-                    'clever-orm': { db: { options: {} } }
-                }
-              , env  = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : 'local'
-              , file = path.join( process.cwd( ), 'config', env + '.json' );
+            var conf    = grunt.config( 'cleverstackorm' )
+              , obj     = require( path.resolve( path.join( process.cwd(), 'modules', 'clever-orm', 'config', 'default.json' ) ) )
+              , env     = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : 'local'
+              , file    = path.join( process.cwd( ), 'config', env + '.json' );
 
             if ( fs.existsSync( file ) ) {
-                obj = require( file );
+                obj = _.extend( obj, require( file ) );
             }
 
             obj[ 'clever-orm' ] = obj[ 'clever-orm' ] || {};
