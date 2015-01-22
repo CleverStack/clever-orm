@@ -20,7 +20,7 @@ moduleLdr.on( 'modulesLoaded', function() {
     async.waterfall(
         [
             function createDatabase( callback ) {
-                var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + config[ 'clever-orm' ].db.database;
+                var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + '`' + config[ 'clever-orm' ].db.database + '`';
 
                 sequelize.query( query, { raw: true } )
                     .then( function() {
@@ -35,7 +35,10 @@ moduleLdr.on( 'modulesLoaded', function() {
                     .then( function() {
                         callback( null );
                     })
-                    .catch( callback );
+                    .catch( function() {
+                        // Since sometimes we can't tell if this worked!
+                        callback( null );
+                    });
             },
 
             function runDialectSqlFile( callback ) {

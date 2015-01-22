@@ -69,7 +69,7 @@ module.exports = Module.extend({
                 }
 
                 models[ association.source.name ]._setters[ association.identifier ] = function( val ) {
-                    this._model[ association.identifier ] = val;
+                    this._model[ association.as ] = val;
                 };
 
                 Object.keys( association.accessors ).forEach( function( accessorName ) {
@@ -227,8 +227,9 @@ module.exports = Module.extend({
     },
 
     parseSchemaField: function( Static, fields, name ) {
-        var options = Static._schema[ name ]
-          , fieldDefinition = {};
+        var fieldDefinition = {}
+          , columnName      = name
+          , options         = Static._schema[ name ]
 
         // Allow direct syntax
         if ( typeof options !== 'object' || options instanceof Array ) {
@@ -244,32 +245,44 @@ module.exports = Module.extend({
         }
 
         // Get the type
-        fieldDefinition.type = this.getFieldType( Static, options );
+        fieldDefinition.type = this.getFieldType( Static, options, name );
+
+        if ( options.columnName ) {
+            columnName      = options.columnName;
+            options.field   = columnName;
+        } else if ( !!Static.underscored && i.underscore( name ).split( '_' ).length > 1 ) {
+            columnName      = i.underscore( name );
+            options.field   = columnName;
+        }
 
         // Handle options
         [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'default', 'comment' ].forEach(function( optionName ) {
             if ( options[ optionName ] !== undefined ) {
                 if ( optionName === 'primaryKey' ) {
-                    Static.primaryKey = name;
+                    Static.primaryKey.push( name );
                 }
 
                 fieldDefinition[ optionName === 'default' ? 'defaultValue' : optionName ] = options[ optionName ];
             }
         });
 
-        fields[ name ] = fieldDefinition;
+        fields[ columnName ] = fieldDefinition;
     },
 
-    getFieldType: function( Static, options ) {
+    getFieldType: function( Static, options, name ) {
         var field;
 
-        switch( options.type ) {
+        switch( options.type.type || options.type ) {
 
         case Number:
             field = this.numberType( options );
             break;
         case String:
-            field = Sequelize.STRING;
+            if ( options.length ) {
+                field = Sequelize.STRING( options.length );
+            } else {
+                field = Sequelize.STRING;
+            }
             break;
         case Boolean:
             field = Sequelize.BOOLEAN;
@@ -286,6 +299,9 @@ module.exports = Module.extend({
         case Model.Types.ENUM:
             field = Sequelize.ENUM( options.values );
             break;
+        case Model.Types.TINYINT:
+            field = this.tinyIntType( options );
+            break;
         case Model.Types.BIGINT:
             field = this.bigIntType( options );
             break;
@@ -299,9 +315,9 @@ module.exports = Module.extend({
             field = Sequelize.TEXT;
             break;
         case undefined:
-            throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static._name + '" model' ].join( ' ' ) );
         default:
-            throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.name + '" model' ].join( ' ' ) );
+            throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static._name + '" model' ].join( ' ' ) );
         }
 
         return field;
@@ -319,14 +335,26 @@ module.exports = Module.extend({
         return field;
     },
 
+    tinyIntType: function( options ) {
+        var field = !!options.length ? 'TINYINT(' + options.length + ')' : 'TINYINT';
+        if ( !!options.unsigned && !!options.zerofill ) {
+            field += ' UNSIGNED ZEROFILL';
+        } else if ( !!options.unsigned && !options.zerofill ) {
+            field += ' UNSIGNED';
+        } else if ( !options.unsigned && !!options.zerofill ) {
+            field += ' ZEROFILL';
+        }
+        return field;
+    },
+
     bigIntType: function( options ) {
         var field = !!options.length ? Sequelize.BIGINT( options.length ) : Sequelize.BIGINT;
         if ( !!options.unsigned && !!options.zerofill ) {
-            field = bigint.UNSIGNED.ZEROFILL;
+            field = field.UNSIGNED.ZEROFILL;
         } else if ( !!options.unsigned && !options.zerofill ) {
-            field = bigint.UNSIGNED;
+            field = field.UNSIGNED;
         } else if ( !options.unsigned && !!options.zerofill ) {
-            field = bigint.ZEROFILL;
+            field = field.ZEROFILL;
         }
         return field;
     },
