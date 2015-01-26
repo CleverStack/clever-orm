@@ -5,7 +5,7 @@ var injector    = require( 'injector' )
   , config      = require( 'config' )
   , path        = require( 'path' )
   , fs          = require( 'fs' )
-  , ormUtils    = require( path.resolve( path.join( __dirname, '..', 'lib', 'utils.js' ) ) )
+  , ormUtils    = utils.ormUtils
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader;
 
@@ -20,7 +20,7 @@ moduleLdr.on( 'modulesLoaded', function() {
     async.waterfall(
         [
             function createDatabase( callback ) {
-                var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + '`' + config[ 'clever-orm' ].db.database + '`';
+                var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + config[ 'clever-orm' ].db.database;
 
                 sequelize.query( query, { raw: true } )
                     .then( function() {
@@ -35,10 +35,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                     .then( function() {
                         callback( null );
                     })
-                    .catch( function() {
-                        // Since sometimes we can't tell if this worked!
-                        callback( null );
-                    });
+                    .catch( callback );
             },
 
             function runDialectSqlFile( callback ) {

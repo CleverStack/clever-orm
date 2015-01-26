@@ -1,7 +1,6 @@
-var path        = require( 'path' )
-  , ormUtils    = require( path.resolve( path.join( __dirname, '..', 'lib', 'utils.js' ) ) )
+var utils       = require( 'utils' )
+  , ormUtils    = utils.ormUtils
   , async       = require( 'async' )
-  , utils       = require( 'utils' )
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader
   , _           = require( 'underscore' )
