@@ -205,6 +205,11 @@ module.exports = Module.extend({
             parseDebug( 'Setting collate=' + Static.collate + '...' );
             sequelizeConf.collate = Static.collate;
         }
+
+        if ( Static.indexes !== false ) {
+            parseDebug( 'Setting indexes...' );
+            sequelizeConf.indexes = Static.indexes;
+        }
     },
 
     setupBehaviours: function( parseDebug, sequelizeConf, Static ) {
