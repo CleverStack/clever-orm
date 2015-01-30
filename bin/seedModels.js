@@ -5,6 +5,7 @@ var utils       = require( 'utils' )
   , moduleLdr   = env.moduleLoader
   , _           = require( 'underscore' )
   , config      = require( 'config' )
+  , debug       = require( 'debug' )( 'cleverstack:cleverOrm:rebase' )
   , inflect     = require( 'i' )();
 
 // Seed once our modules have loaded
@@ -41,7 +42,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                                 ModelType
                                     .create( data )
                                     .then(function( model ) {
-                                        console.log( 'Created ' + modelName );
+                                        debug( 'Created ' + modelName );
                                         if ( associations ) {
                                             model.associations = associations;
                                         }
@@ -121,7 +122,7 @@ moduleLdr.on( 'modulesLoaded', function() {
                                                 associations = associations[ 0 ];
                                             }
 
-                                            console.log( 'Calling ' + modelName + '.' + funcName + '()' );
+                                            debug( 'Calling ' + modelName + '.' + funcName + '()' );
                                             model[ funcName ]( associations )
                                                 .then(function() {
                                                     called++;
@@ -148,10 +149,10 @@ moduleLdr.on( 'modulesLoaded', function() {
         ],
         function forEachModelTypeComplete( err ) {
             if ( err === null || err === undefined ) {
-                console.log( 'Seed completed with no errors' );
+                debug( 'Seed completed with no errors' );
                 process.exit( 0 );
             } else {
-                console.log( err );
+                debug( err );
                 process.exit( 1 );
             }
         }

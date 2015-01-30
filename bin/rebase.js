@@ -5,18 +5,19 @@ var injector    = require( 'injector' )
   , config      = require( 'config' )
   , path        = require( 'path' )
   , fs          = require( 'fs' )
+  , debug       = require( 'debug' )( 'cleverstack:cleverOrm:rebase' )
   , ormUtils    = utils.ormUtils
   , env         = utils.bootstrapEnv()
   , moduleLdr   = env.moduleLoader;
 
-console.log( 'Using configuration:' );
-console.log( util.inspect( config[ 'clever-orm' ].modelAssociations ) );
+debug( 'Using configuration:' );
+debug( util.inspect( config[ 'clever-orm' ].modelAssociations ) );
 
 // Rebase once our modules have loaded
 moduleLdr.on( 'modulesLoaded', function() {
     var sequelize = injector.getInstance( 'sequelize' );
 
-    console.log('Forcing Database to be created! (Note: All your data will disapear!)');
+    debug('Forcing Database to be created! (Note: All your data will disapear!)');
     async.waterfall(
         [
             function createDatabase( callback ) {
@@ -44,11 +45,11 @@ moduleLdr.on( 'modulesLoaded', function() {
                 if ( fs.existsSync( dialectSqlFile ) ) {
                     fs.readFile( dialectSqlFile, function( err, sql ) {
                         if ( err || !sql ) {
-                            console.log( 'No specific dialect SQL found continuing...' );
+                            debug( 'No specific dialect SQL found continuing...' );
                             return callback();
                         }
 
-                        console.log( 'Running dialect specific SQL' );
+                        debug( 'Running dialect specific SQL' );
                         sequelize.query( sql.toString(), null, { raw: true } ).then(function() {
                             callback( null );
                         })
@@ -61,7 +62,7 @@ moduleLdr.on( 'modulesLoaded', function() {
         ],
         function shutdown( err ) {
             if ( err === null ) {
-                console.log( 'Database is rebased' );
+                debug( 'Database is rebased' );
                 process.exit( 0 );
             } else {
                 console.error('Error ' + env.config['clever-orm'].db.options.dialect, err);
