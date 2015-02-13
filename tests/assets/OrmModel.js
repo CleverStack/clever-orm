@@ -2,7 +2,7 @@ module.exports = function ( Model, config ) {
     return Model.extend( 'Orm',
     {
         type: 'ORM',
-        softDeletable: true,
+        softDeleteable: true,
         timeStampable: true
     },
     {

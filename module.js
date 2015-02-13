@@ -3,6 +3,7 @@ var injector    = require( 'injector' )
   , Module      = require( 'classes' ).Module
   , Model       = require( 'classes' ).Model
   , Promise     = require( 'bluebird' )
+  , async       = require( 'async' )
   , _           = require( 'underscore' )
   , i           = require( 'i' )();
 
@@ -68,7 +69,8 @@ module.exports = Module.extend({
                     return this._model[ as ];
                 }
 
-                models[ association.source.name ]._setters[ association.identifier ] = function( val ) {
+                models[ association.source.name ]._setters[ association.identifier ] = 
+                models[ association.source.name ]._setters[ as ] = function( val ) {
                     this._model[ association.as ] = val;
                 };
 
@@ -90,11 +92,21 @@ module.exports = Module.extend({
                                         });
                                     }
 
-                                    this._model[ accessor ]( where, options )
-                                        .then( function( _model ) {
-                                            resolve( _model );
-                                        })
-                                        .catch( reject );
+                                    if ( !!options && options.save === false ) {
+                                        this._model[ accessor ]( where, options );
+                                        resolve(this);
+                                    } else {
+                                        this._model[ accessor ]( where, options )
+                                            .then( function( _model ) {
+                                                if (/set/.test(accessor) && this._model[ as ]) {
+                                                    this._model[ as ]._model = where;
+                                                    resolve( this );
+                                                } else {
+                                                    resolve( _model );
+                                                }
+                                            }.bind(this))
+                                            .catch( reject );
+                                    }
                                 } else {
                                     this._model[ accessor ].then( resolve ).catch( reject );
                                 }
@@ -115,19 +127,127 @@ module.exports = Module.extend({
         associatedWith.forEach( this.proxy( 'associateModels', modelName, assocType ) );
     },
 
-    associateModels: function( modelName, assocType, assocTo ) {
-        // Support second argument
-        if ( assocTo instanceof Array ) {
-            this.debug( '%s %s %s with second argument of ', modelName, assocType, assocTo[0], assocTo[1] );
+    associateModels: function( sourceModelName, assocType, assocTo ) {
+        assocTo = assocTo instanceof Array ? _.clone(assocTo) : [assocTo, {}];
 
-            if ( assocTo[ 1 ].through ) {
-                assocTo[ 1 ].through =  this.models[ assocTo[ 1 ].through.replace( 'Model', '' ) ];
-            }
+        var targetModelName     = assocTo.shift()
+          , associationOptions  = assocTo.shift()
+          , sourceModel         = injector.getInstance(sourceModelName + 'Model')
+          , targetModel         = injector.getInstance((associationOptions.through ? associationOptions.through : targetModelName) + 'Model')
+          , as                  = associationOptions.as || targetModelName.replace('Model','');
 
-            this.models[ modelName ][ assocType ]( this.models[ assocTo[0] ], assocTo[1] );
-        } else {
-            this.debug( '%s %s %s', modelName, assocType, assocTo );
-            this.models[ modelName ][ assocType ]( this.models[assocTo] );
+        if ( associationOptions.through ) {
+            associationOptions.through =  this.models[ associationOptions.through.replace( 'Model', '' ) ];
+        }
+
+        this.debug( '%s %s %s %s', sourceModelName, assocType, targetModelName, associationOptions);
+        this.models[ sourceModelName ][ assocType ]( this.models[targetModelName], associationOptions );
+
+        if (associationOptions.autoHooks !== false) {
+            injector.getInstance('moduleLoader').on( 'routesInitialized', function() {
+                if (assocType === 'belongsTo') {
+                    sourceModel.on('beforeCreate', function(modelData, queryOptions, callback) {
+                        if (modelData[as] !== undefined && modelData[as]._model === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
+                            targetModel
+                                .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : modelData[as], queryOptions)
+                                .then(function(instance) {
+                                    modelData[as] = instance;
+                                    callback(null);
+                                })
+                                .catch(callback);
+                        } else {
+                            callback(null);
+                        }
+                    });
+
+                    sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
+                        if (modelData[as] !== undefined && modelData[as]._model !== undefined) {
+                            instance._model[as]        = modelData[as];
+                            instance._model.values[as] = modelData[as];
+
+                            callback(null);
+                        } else {
+                            callback(null);
+                        }
+                    });
+
+                    // sourceModel.on('beforeUpdate', function(modelData, queryOptions, callback) {
+                    //     if (modelData[as] !== undefined && modelData[as]._model === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
+                    //         targetModel
+                    //             .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : modelData[as], queryOptions)
+                    //             .then(function(instance) {
+                    //                 modelData[as] = instance;
+                    //                 callback(null);
+                    //             })
+                    //             .catch(callback);
+                    //     } else {
+                    //         callback(null);
+                    //     }
+                    // });
+                } else if (assocType === 'hasMany') {
+                    sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
+                        var association = instance.Class._model.associations[as];
+
+                        // handle single association creation via the singular name
+                        // handle multiple association create via the plural name as an array of models
+                        // support nested association hasMany creation (plural and singular) with "Through", findBy ?
+                        // allow mapping of requestFields that will be used for create
+                        // allow definition of finders?
+
+                        if (modelData[as] !== undefined && modelData[as] instanceof Array && modelData[as].length) {
+                            async.map(
+                                modelData[as],
+                                function createNestedHasManyModel(nestedModelData, done) {
+                                    var data = _.extend(
+                                        typeof nestedModelData === 'object' ? _.clone(nestedModelData) : { label: nestedModelData },
+                                        _.pick(instance, association.options.foreignKey)
+                                    );
+
+                                    targetModel.create(data, queryOptions).then(function(targetInstance) {
+                                        done(null, targetInstance);
+                                    })
+                                    .catch(done);
+                                },
+                                function createdNestedHasManyModels(err, associations) {
+                                    if (!err) {
+                                        instance._model[as]        = associations;
+                                        instance._model.values[as] = associations;
+
+                                        callback(null);
+                                    } else {
+                                        callback(err);
+                                    }
+                                }
+                            );
+                        } else {
+                            callback(null);
+                        }
+                    });
+
+                    // sourceModel.on('afterUpdate')
+                } else if (assocType === 'hasOne') {
+                    sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
+                        var association = instance.Class._model.associations[as];
+
+                        if (modelData[as] !== undefined && modelData[as]._model === undefined && typeof modelData[as] === 'object') {
+                            var data = _.extend(
+                                typeof modelData[as] === 'object' ? _.clone(modelData[as]) : { label: modelData[as] },
+                                _.pick(instance, association.options.foreignKey)
+                            );
+
+                            targetModel.create(data, queryOptions).then(function(targetInstance) {
+                                instance._model[as]        = targetInstance;
+                                instance._model.values[as] = targetInstance;
+
+                                callback(null);
+                            })
+                            .catch(callback);
+                        } else {
+                            callback(null);
+                        }
+                    });
+                }
+            });
         }
     },
 
@@ -220,6 +340,13 @@ module.exports = Module.extend({
 
             sequelizeConf.paranoid = Static.softDeletable;
             sequelizeConf.deletedAt = Static.deletedAt;
+
+            if ( Static.deletedAt !== 'deletedAt' ) {
+                Static._aliases.push({
+                    key         : 'deletedAt',
+                    columnName  : Static.deletedAt
+                });
+            }
         }
 
         if ( !!Static.timeStampable ) {
