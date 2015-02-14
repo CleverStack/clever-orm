@@ -88,13 +88,13 @@ module.exports = function( grunt ) {
             grunt.registerTask( 'db', [ 'db:orm' ] );
         }
 
-        grunt.registerTask( 'readme', 'Displays helpful information', function ( ) {
-            console.log( 'Installation instructions:' );
-            console.log( '1. In the config file for your desired environment (ie. backend/config/local.json), update the clever-orm object with the details for your database.' );
-            console.log( '' );
-            console.log( '2. From your project\'s `backend` folder, run `NODE_ENV=local grunt db`.' );
-            console.log( 'The database tables for your modules should now be installed and seeded with data!' );
-        } );
+        // grunt.registerTask( 'readme', 'Displays helpful information', function ( ) {
+        //     console.log( '(Manual) Installation instructions:' );
+        //     console.log( '1. In the config file for your desired environment (ie. backend/config/local.json), update the clever-orm object with the details for your database.' );
+        //     console.log( '' );
+        //     console.log( '2. From your project\'s `backend` folder, run `NODE_ENV=local grunt db`.' );
+        //     console.log( 'The database tables for your modules should now be installed and seeded with data!' );
+        // } );
 
         grunt.registerTask( 'prompt:cleverOrmConfig', [ 'prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig' ] );
         grunt.registerTask( 'cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function ( ) {
