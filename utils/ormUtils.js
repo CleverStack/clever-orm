@@ -123,9 +123,10 @@ var ormUtils    = module.exports  = {
         }))
         .catch(sequelize.UniqueConstraintError, this.callback(function(e) {
             var columnName = Object.keys(e.fields).shift()
-              , column     = underscore.findWhere(this._aliases, { columnName: columnName });
+              , column     = underscore.findWhere(this._aliases, { columnName: columnName })
+              , key        = !!column ? column.key : columnName;
 
-            callback(new Exceptions.DuplicateModel(util.format('Unable to create a new %s, identity already exists (%s).', column.key, e.fields[columnName])));
+            callback(new Exceptions.DuplicateModel(util.format('%s with %s of "%s" already exists.', this._name, key, e.fields[columnName])));
         }))
         .catch(callback);
     },
