@@ -19,7 +19,7 @@ module.exports = function( grunt ) {
                             config: 'cleverstackorm.username',
                             type: 'input',
                             message: 'Database username',
-                            default: '',
+                            default: ''
                         },
                         {
                             config: 'cleverstackorm.password',
@@ -41,7 +41,8 @@ module.exports = function( grunt ) {
                                 { name: 'mysql' },
                                 { name: 'mariadb' },
                                 { name: 'postgres' },
-                                { name: 'sqlite' }
+                                { name: 'sqlite' },
+                                { name: 'mssql' }
                             ]
                         },
                         {

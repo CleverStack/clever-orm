@@ -21,7 +21,14 @@ moduleLdr.on( 'modulesLoaded', function() {
     async.waterfall(
         [
             function createDatabase( callback ) {
-                var query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + config[ 'clever-orm' ].db.database;
+                var query;
+
+                if ( config[ 'clever-orm' ].db.options.dialect !== 'mssql' ) {
+                    query = 'CREATE DATABASE ' + ( config[ 'clever-orm' ].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '' ) + config[ 'clever-orm' ].db.database;
+                }
+                else {
+                    query = "IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = '" + config[ 'clever-orm' ].db.database + "') CREATE DATABASE [" + config[ 'clever-orm' ].db.database + "]";
+                }
 
                 sequelize.query( query, { raw: true } )
                     .then( function() {
