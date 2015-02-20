@@ -56,22 +56,22 @@ module.exports = Module.extend({
             Object.keys( model.associations ).forEach( this.proxy( function( assocationName ) {
                 var association = model.associations[ assocationName ];
 
-                models[ association.source.name ]._getters[ association.identifier ] = function() {
+                models[ association.source.name ].getters[ association.identifier ] = function() {
                     if ( association.identifier === 'id' && Model.type.toLowerCase() === 'odm' ) {
-                        return this._model._id;
+                        return this.entity._id;
                     } else {
-                        return this._model[ association.identifier ];
+                        return this.entity[ association.identifier ];
                     }
                 }
 
                 var as = i[ association.associationType === 'HasMany' ? 'pluralize' : 'singularize' ]( association.as );
-                models[ association.source.name ]._getters[ as ] = function() {
-                    return this._model[ as ];
+                models[ association.source.name ].getters[ as ] = function() {
+                    return this.entity[ as ];
                 }
 
-                models[ association.source.name ]._setters[ association.identifier ] = 
-                models[ association.source.name ]._setters[ as ] = function( val ) {
-                    this._model[ association.as ] = val;
+                models[ association.source.name ].setters[ association.identifier ] = 
+                models[ association.source.name ].setters[ as ] = function( val ) {
+                    this.entity[ association.as ] = val;
                 };
 
                 Object.keys( association.accessors ).forEach( function( accessorName ) {
@@ -84,31 +84,31 @@ module.exports = Module.extend({
                                     where   = where || {};
                                     options = options ? _.clone( options ) : {};
 
-                                    if ( where._model ) {
-                                        where = where._model;
-                                    } else if ( where instanceof Array && where[ 0 ]._model ) {
-                                        where = where.map( function( _model ) {
-                                            return _model._model;
+                                    if ( where.entity ) {
+                                        where = where.entity;
+                                    } else if ( where instanceof Array && where[ 0 ].entity ) {
+                                        where = where.map( function( entity ) {
+                                            return entity.entity;
                                         });
                                     }
 
                                     if ( !!options && options.save === false ) {
-                                        this._model[ accessor ]( where, options );
+                                        this.entity[ accessor ]( where, options );
                                         resolve(this);
                                     } else {
-                                        this._model[ accessor ]( where, options )
-                                            .then( function( _model ) {
-                                                if (/set/.test(accessor) && this._model[ as ]) {
-                                                    this._model[ as ]._model = where;
+                                        this.entity[ accessor ]( where, options )
+                                            .then( function( entity ) {
+                                                if (/set/.test(accessor) && this.entity[ as ]) {
+                                                    this.entity[ as ].entity = where;
                                                     resolve( this );
                                                 } else {
-                                                    resolve( _model );
+                                                    resolve( entity );
                                                 }
                                             }.bind(this))
                                             .catch( reject );
                                     }
                                 } else {
-                                    this._model[ accessor ].then( resolve ).catch( reject );
+                                    this.entity[ accessor ].then( resolve ).catch( reject );
                                 }
                             }.bind( this ))
                         }
@@ -147,7 +147,7 @@ module.exports = Module.extend({
             injector.getInstance('moduleLoader').on( 'routesInitialized', function() {
                 if (assocType === 'belongsTo') {
                     sourceModel.on('beforeCreate', function(modelData, queryOptions, callback) {
-                        if (modelData[as] !== undefined && modelData[as]._model === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
+                        if (modelData[as] !== undefined && modelData[as].entity === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
                             targetModel
                                 .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : modelData[as], queryOptions)
                                 .then(function(instance) {
@@ -161,9 +161,9 @@ module.exports = Module.extend({
                     });
 
                     sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
-                        if (modelData[as] !== undefined && modelData[as]._model !== undefined) {
-                            instance._model[as]        = modelData[as];
-                            instance._model.values[as] = modelData[as];
+                        if (modelData[as] !== undefined && modelData[as].entity !== undefined) {
+                            instance.entity[as]        = modelData[as];
+                            instance.entity.values[as] = modelData[as];
 
                             callback(null);
                         } else {
@@ -172,7 +172,7 @@ module.exports = Module.extend({
                     });
 
                     // sourceModel.on('beforeUpdate', function(modelData, queryOptions, callback) {
-                    //     if (modelData[as] !== undefined && modelData[as]._model === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
+                    //     if (modelData[as] !== undefined && modelData[as].entity === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
                     //         targetModel
                     //             .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : modelData[as], queryOptions)
                     //             .then(function(instance) {
@@ -186,7 +186,7 @@ module.exports = Module.extend({
                     // });
                 } else if (assocType === 'hasMany') {
                     sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
-                        var association = instance.Class._model.associations[as];
+                        var association = instance.Class.entity.associations[as];
 
                         // handle single association creation via the singular name
                         // handle multiple association create via the plural name as an array of models
@@ -210,8 +210,8 @@ module.exports = Module.extend({
                                 },
                                 function createdNestedHasManyModels(err, associations) {
                                     if (!err) {
-                                        instance._model[as]        = associations;
-                                        instance._model.values[as] = associations;
+                                        instance.entity[as]        = associations;
+                                        instance.entity.values[as] = associations;
 
                                         callback(null);
                                     } else {
@@ -227,17 +227,17 @@ module.exports = Module.extend({
                     // sourceModel.on('afterUpdate')
                 } else if (assocType === 'hasOne') {
                     sourceModel.on('afterCreate', function(instance, modelData, queryOptions, callback) {
-                        var association = instance.Class._model.associations[as];
+                        var association = instance.Class.entity.associations[as];
 
-                        if (modelData[as] !== undefined && modelData[as]._model === undefined && typeof modelData[as] === 'object') {
+                        if (modelData[as] !== undefined && modelData[as].entity === undefined && typeof modelData[as] === 'object') {
                             var data = _.extend(
                                 typeof modelData[as] === 'object' ? _.clone(modelData[as]) : { label: modelData[as] },
                                 _.pick(instance, association.options.foreignKey)
                             );
 
                             targetModel.create(data, queryOptions).then(function(targetInstance) {
-                                instance._model[as]        = targetInstance;
-                                instance._model.values[as] = targetInstance;
+                                instance.entity[as]        = targetInstance;
+                                instance.entity.values[as] = targetInstance;
 
                                 callback(null);
                             })
@@ -253,18 +253,18 @@ module.exports = Module.extend({
 
     parseModelSchema: function( Static ) {
         var parseDebug = this.proxy(function( msg ) { 
-                this.debug( Static._name + 'Model: ' + msg ); 
+                this.debug( Static.modelName + 'Model: ' + msg ); 
             })
           , sequelizeConf = { paranoid: false, timestamps: false }
           , fields = {};
 
-        if ( this.models[ Static._name ] !== undefined ) {
+        if ( this.models[ Static.modelName ] !== undefined ) {
             parseDebug( 'Returning previously parsed and generated model...' );
-            return this.models[ Static._name ];
+            return this.models[ Static.modelName ];
         }
 
         parseDebug( 'Parsing schema for model...' );
-        Object.keys( Static._schema ).forEach( this.proxy( 'parseSchemaField', Static, fields ) );
+        Object.keys( Static.fields ).forEach( this.proxy( 'defineField', Static, fields ) );
     
         parseDebug( 'Configuring static object for sequelize...' );
 
@@ -276,14 +276,14 @@ module.exports = Module.extend({
         Static.fn = this.sequelize.fn;
         Static.col = this.sequelize.col;
 
-        parseDebug( 'Setting sequelize as the _db (adapter) for the Model...' );
-        Static._db = this.sequelize;
+        parseDebug( 'Setting sequelize as the connection (adapter) for the Model...' );
+        Static.connection = this.sequelize;
 
         parseDebug( 'Generating new sequelize model using computed schema...' );
-        var model = this.sequelize.define( Static._name, fields, sequelizeConf );
+        var model = this.sequelize.define( Static.modelName, fields, sequelizeConf );
 
         parseDebug( 'Caching completed native model...' );
-        this.models[ Static._name ] = model;
+        this.models[ Static.modelName ] = model;
 
         return model;
     },
@@ -342,7 +342,7 @@ module.exports = Module.extend({
             sequelizeConf.deletedAt = Static.deletedAt;
 
             if ( Static.deletedAt !== 'deletedAt' ) {
-                Static._aliases.push({
+                Static.aliases.push({
                     key         : 'deletedAt',
                     columnName  : Static.deletedAt
                 });
@@ -358,10 +358,10 @@ module.exports = Module.extend({
         }
     },
 
-    parseSchemaField: function( Static, fields, name ) {
+    defineField: function( Static, fields, name ) {
         var fieldDefinition = {}
           , columnName      = name
-          , options         = Static._schema[ name ]
+          , options         = Static.fields[ name ]
 
         // Allow direct syntax
         if ( typeof options !== 'object' || options instanceof Array ) {
@@ -391,7 +391,14 @@ module.exports = Module.extend({
         [ 'allowNull', 'primaryKey', 'autoIncrement', 'unique', 'default', 'comment' ].forEach(function( optionName ) {
             if ( options[ optionName ] !== undefined ) {
                 if ( optionName === 'primaryKey' ) {
-                    Static.primaryKey.push( name );
+                    Static.primaryKeys.push( name );
+                    if (!Static.primaryKey) {
+                        Static.hasPrimaryKey = true;
+                        Static.singlePrimaryKey = true;
+                        Static.primaryKey = name;
+                    } else {
+                        Static.singlePrimaryKey = false;
+                    }
                 }
 
                 fieldDefinition[ optionName === 'default' ? 'defaultValue' : optionName ] = options[ optionName ];
@@ -447,9 +454,9 @@ module.exports = Module.extend({
             field = Sequelize.TEXT;
             break;
         case undefined:
-            throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static._name + '" model' ].join( ' ' ) );
+            throw new Error( [ 'You must define the type of field that', '"' + name + '"', 'is on the', '"' + Static.modelName + '" model' ].join( ' ' ) );
         default:
-            throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static._name + '" model' ].join( ' ' ) );
+            throw new Error( [ 'You must define a valid type for the field named', '"' + name + '"', 'on the', '"' + Static.modelName + '" model' ].join( ' ' ) );
         }
 
         return field;

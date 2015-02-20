@@ -24,10 +24,10 @@ var ormUtils    = module.exports  = {
             for(var i = 0; i < findOptions.include.length; i++) {
                 this.debug('eagerLoad(' + inspect(underscore.omit(findOptions.include[i], 'model', 'include')) + ', ' + inspect(findOptions.include[i].model.name) + ')');
 
-                if (findOptions.include[i]._model) {
-                    findOptions.include[i] = findOptions.include[i]._model;
-                } else if (findOptions.include[i].model && findOptions.include[i].model._model) {
-                    findOptions.include[i].model = findOptions.include[i].model._model;
+                if (findOptions.include[i].entity) {
+                    findOptions.include[i] = findOptions.include[i].entity;
+                } else if (findOptions.include[i].model && findOptions.include[i].model.entity) {
+                    findOptions.include[i].model = findOptions.include[i].model.entity;
                 }
 
                 // Handle customColumnNames in nested include.where's
@@ -44,28 +44,28 @@ var ormUtils    = module.exports  = {
     },
 
     afterEagerLoad: function(findOptions, model) {
-        if (model !== null && findOptions.include && findOptions.include.length && model._model.options.include) {
+        if (model !== null && findOptions.include && findOptions.include.length && model.entity.options.include) {
             var models = this.getDefinedModels();
 
-            Object.keys(model._model.options.includeMap).forEach(function(modelName) {
-                var _include    = model._model.options.includeMap[modelName]
+            Object.keys(model.entity.options.includeMap).forEach(function(modelName) {
+                var _include    = model.entity.options.includeMap[modelName]
                   , as          = inflect.camelize(_include.as, false)
                   , csModel     = models[_include.association.target ? _include.association.target.name : modelName];
 
                 this.debug('afterEagerLoad(' + inspect(_include.as) + ', ' + inspect(_include.model.name) + ')');
 
-                if (!!csModel && !!model._model[as]) {
-                    if (model._model[as] instanceof Array) {
-                        for (var i = 0; i < model._model[as].length; i++) {
-                            if (!(model._model[as][i] instanceof csModel)) {
-                                model._model[as][i] = new csModel(model._model[as][i]);
-                                ormUtils.afterEagerLoad.apply(csModel, [model._model[as][i]._model.options, model._model[as][i]]);
+                if (!!csModel && !!model.entity[as]) {
+                    if (model.entity[as] instanceof Array) {
+                        for (var i = 0; i < model.entity[as].length; i++) {
+                            if (!(model.entity[as][i] instanceof csModel)) {
+                                model.entity[as][i] = new csModel(model.entity[as][i]);
+                                ormUtils.afterEagerLoad.apply(csModel, [model.entity[as][i].entity.options, model.entity[as][i]]);
                             }
                         }
                     } else {
-                        if (!(model._model[as] instanceof csModel)) {
-                            model._model[as] = new csModel(model._model[as]);
-                            ormUtils.afterEagerLoad.apply(csModel, [model._model[as]._model.options, model._model[as]]);
+                        if (!(model.entity[as] instanceof csModel)) {
+                            model.entity[as] = new csModel(model.entity[as]);
+                            ormUtils.afterEagerLoad.apply(csModel, [model.entity[as].entity.options, model.entity[as]]);
                         }
                     }
                 }
@@ -79,7 +79,7 @@ var ormUtils    = module.exports  = {
 
         ormUtils.eagerLoad.apply(this, [findOptions, queryOptions]);
 
-        this._model
+        this.entity
         .find(findOptions, queryOptions)
         .then(function( model ) {
             ormUtils.wrapModel.apply(this, [ findOptions, model, callback ]);
@@ -102,7 +102,7 @@ var ormUtils    = module.exports  = {
     findAll: function(findOptions, queryOptions, callback) {
         ormUtils.eagerLoad.apply(this, [findOptions, queryOptions]);
 
-        this._model
+        this.entity
         .findAll(findOptions, queryOptions)
         .then(this.callback(function(results) {
             results = async.map(
@@ -115,11 +115,11 @@ var ormUtils    = module.exports  = {
     },
 
     create: function(modelData, queryOptions, callback) {
-        var data = underscore.pick(modelData, Object.keys(this._model.attributes));
+        var data = underscore.pick(modelData, Object.keys(this.entity.attributes));
 
         this.debug(util.format('ormUtils.create(%s)', Object.keys(data).join(', ')));
-        this._model.create(data, queryOptions).then(this.callback(function(_model) {
-            callback(null, new this(_model));
+        this.entity.create(data, queryOptions).then(this.callback(function(entity) {
+            callback(null, new this(entity));
         }))
         .catch(sequelize.UniqueConstraintError, this.callback(function(e) {
             var columnName = Object.keys(e.fields).shift()
@@ -131,10 +131,17 @@ var ormUtils    = module.exports  = {
         .catch(callback);
     },
 
+    update: function(values, queryOptions, callback) {
+        this.entity
+        .update(values, queryOptions)
+        .then(callback.bind(null, null))
+        .catch(callback);
+    },
+
     save: function(data, queryOptions, callback) {
         this.debug('ormUtils.save()');
 
-        this._model
+        this.entity
         .save(data, queryOptions)
         .then(callback.bind(null, null))
         .catch(callback)
@@ -143,7 +150,7 @@ var ormUtils    = module.exports  = {
     destroy: function(queryOptions, callback) {
         this.debug('ormUtils.destroy()');
         
-        this._model
+        this.entity
         .destroy(queryOptions)
         .then(callback.bind(null, null))
         .catch(callback)

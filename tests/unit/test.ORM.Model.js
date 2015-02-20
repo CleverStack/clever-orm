@@ -34,79 +34,79 @@ describe( 'test.ORM.Model', function() {
         });
 
         it( 'Should have String field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'str' );
-            expect( OrmModel._schema.str ).to.eql( String );
+            expect( OrmModel.fields ).to.have.property( 'str' );
+            expect( OrmModel.fields.str ).to.eql( String );
 
             done();
         });
 
         it( 'Should have Boolean field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'bool' );
-            expect( OrmModel._schema.bool ).to.eql( Boolean );
+            expect( OrmModel.fields ).to.have.property( 'bool' );
+            expect( OrmModel.fields.bool ).to.eql( Boolean );
             
             done();
         });
 
         it( 'Should have Date field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'date' );
-            expect( OrmModel._schema.date ).to.eql( Date );
+            expect( OrmModel.fields ).to.have.property( 'date' );
+            expect( OrmModel.fields.date ).to.eql( Date );
             
             done();
         });
 
         it( 'Should have Enum field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'enum' );
-            expect( OrmModel._schema.enum ).to.have.property( 'type' );
-            expect( OrmModel._schema.enum.type.toString() ).to.equal( 'ENUM' );
-            expect( OrmModel._schema.enum ).to.have.property( 'values' );
-            expect( OrmModel._schema.enum.values ).to.be.an( 'array' );
-            expect( OrmModel._schema.enum.values.length ).to.equal( 1 );
-            expect( OrmModel._schema.enum.values[ 0 ] ).to.equal( 'test' );
+            expect( OrmModel.fields ).to.have.property( 'enum' );
+            expect( OrmModel.fields.enum ).to.have.property( 'type' );
+            expect( OrmModel.fields.enum.type.toString() ).to.equal( 'ENUM' );
+            expect( OrmModel.fields.enum ).to.have.property( 'values' );
+            expect( OrmModel.fields.enum.values ).to.be.an( 'array' );
+            expect( OrmModel.fields.enum.values.length ).to.equal( 1 );
+            expect( OrmModel.fields.enum.values[ 0 ] ).to.equal( 'test' );
 
             done();
         });
 
         it( 'Should have Enum (defined by object notation) field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'enumObj' );
-            expect( OrmModel._schema.enumObj ).to.have.property( 'type' );
-            expect( OrmModel._schema.enumObj.type.toString() ).to.equal( 'ENUM' );
-            expect( OrmModel._schema.enumObj ).to.have.property( 'values' );
-            expect( OrmModel._schema.enumObj.values ).to.be.an( 'array' );
-            expect( OrmModel._schema.enumObj.values.length ).to.equal( 1 );
-            expect( OrmModel._schema.enumObj.values[ 0 ] ).to.equal( 'test' );
+            expect( OrmModel.fields ).to.have.property( 'enumObj' );
+            expect( OrmModel.fields.enumObj ).to.have.property( 'type' );
+            expect( OrmModel.fields.enumObj.type.toString() ).to.equal( 'ENUM' );
+            expect( OrmModel.fields.enumObj ).to.have.property( 'values' );
+            expect( OrmModel.fields.enumObj.values ).to.be.an( 'array' );
+            expect( OrmModel.fields.enumObj.values.length ).to.equal( 1 );
+            expect( OrmModel.fields.enumObj.values[ 0 ] ).to.equal( 'test' );
 
             done();
         });
 
         it( 'Should have Buffer field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'buf' );
-            expect( OrmModel._schema.buf ).to.eql( Buffer );
+            expect( OrmModel.fields ).to.have.property( 'buf' );
+            expect( OrmModel.fields.buf ).to.eql( Buffer );
 
             done();
         });
 
         it( 'Should have bigint field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'bigint' );
-            expect( OrmModel._schema.bigint.toString() ).to.equal( 'BIGINT' );
+            expect( OrmModel.fields ).to.have.property( 'bigint' );
+            expect( OrmModel.fields.bigint.toString() ).to.equal( 'BIGINT' );
 
             done();
         });
 
         it( 'Should have bigint with length field', function( done ) {
-            expect( OrmModel._schema ).to.have.property( 'bigintLen' );
-            expect( OrmModel._schema.bigintLen ).to.have.property( 'length' );
-            expect( OrmModel._schema.bigintLen.length ).to.equal( 11 );
-            expect( OrmModel._schema.bigintLen.type.toString() ).to.equal( 'BIGINT' );
+            expect( OrmModel.fields ).to.have.property( 'bigintLen' );
+            expect( OrmModel.fields.bigintLen ).to.have.property( 'length' );
+            expect( OrmModel.fields.bigintLen.length ).to.equal( 11 );
+            expect( OrmModel.fields.bigintLen.type.toString() ).to.equal( 'BIGINT' );
 
             done();
         });
 
         // @todo this is broken
         it.skip( 'Should have defined Orms table in MySQL', function( done ) {
-            injector.getInstance( 'sequelize' ).query( 'describe ' + OrmModel._model.tableName + ';', { raw: true })
+            injector.getInstance( 'sequelize' ).query( 'describe ' + OrmModel.entity.tableName + ';', { raw: true })
                 .then(function( desc ) {
-                    var modelSchemaKeys = Object.keys( OrmModel._schema).map( function( fieldName ) {
-                        var field = OrmModel._schema[ fieldName ];
+                    var modelSchemaKeys = Object.keys( OrmModel.fields).map( function( fieldName ) {
+                        var field = OrmModel.fields[ fieldName ];
                         return field.field ? field.field : fieldName;
                     });
                     expect( Object.keys( JSON.parse( JSON.stringify( desc ) ) ) ).to.eql( modelSchemaKeys );
@@ -119,7 +119,7 @@ describe( 'test.ORM.Model', function() {
 
     describe( 'Usage', function() {
         it( 'Should be able to create a new model instance', function( done ) {
-            var _model = {
+            var entity = {
                 str             : 'String',
                 bool            : true,
                 date            : new Date(),
@@ -139,10 +139,10 @@ describe( 'test.ORM.Model', function() {
             };
 
             OrmModel
-                .create( _.clone( _model ) )
+                .create( _.clone( entity ) )
                 .then( function( model ) {
-                    Object.keys( _model ).forEach( function( key ) {
-                        expect( model[ key ] ).to.eql( _model[ key ] );
+                    Object.keys( entity ).forEach( function( key ) {
+                        expect( model[ key ] ).to.eql( entity[ key ] );
                     });
                     done();
                 })
