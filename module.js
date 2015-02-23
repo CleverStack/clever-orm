@@ -149,7 +149,7 @@ module.exports = Module.extend({
                     sourceModel.on('beforeCreate', function(modelData, queryOptions, callback) {
                         if (modelData[as] !== undefined && modelData[as].entity === undefined && (typeof modelData[as] !== 'object' || modelData[as][targetModel.primaryKey[0]] === undefined)) {
                             targetModel
-                                .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : modelData[as], queryOptions)
+                                .find(typeof modelData[as] === 'object' ? _.clone(modelData[as]) : { where: { id: modelData[as] } }, queryOptions)
                                 .then(function(instance) {
                                     modelData[as] = instance;
                                     callback(null);
@@ -199,7 +199,7 @@ module.exports = Module.extend({
                                 modelData[as],
                                 function createNestedHasManyModel(nestedModelData, done) {
                                     var data = _.extend(
-                                        typeof nestedModelData === 'object' ? _.clone(nestedModelData) : { label: nestedModelData },
+                                        typeof nestedModelData === 'object' ? _.clone(nestedModelData) : { id: nestedModelData },
                                         _.pick(instance, association.options.foreignKey)
                                     );
 
@@ -231,7 +231,7 @@ module.exports = Module.extend({
 
                         if (modelData[as] !== undefined && modelData[as].entity === undefined && typeof modelData[as] === 'object') {
                             var data = _.extend(
-                                typeof modelData[as] === 'object' ? _.clone(modelData[as]) : { label: modelData[as] },
+                                typeof modelData[as] === 'object' ? _.clone(modelData[as]) : { id: modelData[as] },
                                 _.pick(instance, association.options.foreignKey)
                             );
 
