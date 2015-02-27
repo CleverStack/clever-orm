@@ -1,15 +1,15 @@
 {
-    "clever-orm": {
-        "db": {
-            "username": "root",
-            "password": "",
-            "database": "nodeseed",
-            "options": {
-                "host": "localhost",
-                "dialect": "mysql",
-                "port": 3306
-            }
-        },
-        "modelAssociations": {}
-    }
+  "clever-orm": {
+    "db": {
+      "username": "root",
+      "password": "",
+      "database": "nodeseed",
+      "options": {
+        "host": "localhost",
+        "dialect": "mysql",
+        "port": 3306
+      }
+    },
+    "modelAssociations": {}
+  }
 }
