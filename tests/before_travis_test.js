@@ -136,7 +136,7 @@ function configureOrmModule() {
         { reg: /Database username/ , write: 'travis\n'   , done: false },
         { reg: /Database password/ , write: '\n'         , done: false },
         { reg: /Database name/     , write: 'test_db\n'  , done: false },
-        { reg: /Database dialect/  , write: 'mysql\n'         , done: false },
+        { reg: /Database dialect/  , write: 'mysql\n'    , done: false },
         { reg: /Database host/     , write: '127.0.0.1\n', done: false },
         { reg: /Database port/     , write: '3306\n'     , done: false },
       ]
