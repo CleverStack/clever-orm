@@ -1,7 +1,7 @@
 {
   "name":         "clever-orm",
   "description":  "CleverStack ORM (SQL) Module",
-  "version":      "2.0.0-rc1",
+  "version":      "2.0.0-rc2",
   "main":         "module.js",
   "author": {
     "name":     "CleverStack",
@@ -33,7 +33,7 @@
     "relational",
     "mapper"
   ],
-  "license":      "BSD-2-Clause",
+  "license":      "MIT",
   "dependencies": {
     "mysql":        "2.0.0-rc2",
     "sequelize":    "2.0.3"
