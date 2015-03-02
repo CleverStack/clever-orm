@@ -143,9 +143,10 @@ module.exports = function(grunt) {
       ormSeed: {
         cmd: "node modules/clever-orm/bin/seedModels.js " + dbTarget
       },
-      cleverOrmPostInstall: {
+      ormPostInstall: {
         cmd: "node modules/clever-orm/bin/postInstall.js " + (verbose ? '-v' : '')
-      }
+      },
+
     }
   }, function(grunt) {
     grunt.loadNpmTasks('grunt-prompt');
@@ -167,7 +168,7 @@ module.exports = function(grunt) {
       grunt.registerTask('db', ['db:orm']);
     }
 
-    grunt.registerTask('prompt:cleverOrmConfig', ['prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig', 'exec:cleverOrmPostInstall']);
+    grunt.registerTask('prompt:cleverOrmConfig', ['prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig', 'exec:ormPostInstall']);
     grunt.registerTask('cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function createOrmConfig() {
       var conf    = grunt.config('cleverstackorm')
         , obj     = require(path.resolve(path.join(process.cwd(), 'modules', 'clever-orm', 'config', 'default.json')))
