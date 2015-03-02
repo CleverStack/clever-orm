@@ -1,16 +1,18 @@
 'use strict';
 
-var fs          = require('fs')
-  , path        = require('path')
-  , pkgJson     = require(path.resolve(path.join(__dirname, '..', '..', 'package.json')))
-  , odmEnabled  = pkgJson.bundledDependencies.indexOf('clever-odm') !== -1
-  , _           = require('underscore');
+var fs         = require('fs')
+  , path       = require('path')
+  , appRoot    = path.resolve(path.join(__dirname, '..', '..'))
+  , pkgJson    = require(path.resolve(path.join(appRoot, 'package.json')))
+  , odmEnabled = pkgJson.bundledDependencies.indexOf('clever-odm') !== -1
+  , underscore = require('underscore');
 
 module.exports = function(grunt) {
   var defaultConfig = require(path.join(__dirname, 'config', 'default.json'))
     , configFile    = null
     , config        = {}
-    , dbTarget      = grunt.option('module') || null;
+    , dbTarget      = grunt.option('module') || null
+    , verbose       = grunt.option('verbose');
 
   return [{
     prompt: {
@@ -32,12 +34,12 @@ module.exports = function(grunt) {
                 return process.env.NODE_ENV ? process.env.NODE_ENV.toUpperCase() : 'LOCAL';
               },
               filter: function(env) {
-                _.extend(config, defaultConfig);
+                underscore.extend(config, defaultConfig);
 
-                configFile = path.resolve(path.join(__dirname, '..', '..', 'config', env.toLowerCase() + '.json'));
+                configFile = path.resolve(path.join(appRoot, 'config', env.toLowerCase() + '.json'));
 
                 if (fs.existsSync(configFile)) {
-                  _.extend(config, require(configFile));
+                  underscore.extend(config, require(configFile));
                   
                   Object.keys(defaultConfig['clever-orm']).forEach(function(key) {
                     if (typeof config['clever-orm'][key] === 'undefined') {
@@ -85,7 +87,7 @@ module.exports = function(grunt) {
                 { name: 'sqlite' }
               ],
               default: function() {
-                return config['clever-orm'].db.dialect || 'mysql';
+                return config['clever-orm'].db.options.dialect || 'mysql';
               }
             },
             {
@@ -93,7 +95,7 @@ module.exports = function(grunt) {
               type: 'input',
               message: 'Database host',
               default: function() {
-                return config['clever-orm'].db.host || '127.0.0.1';
+                return config['clever-orm'].db.options.host || '127.0.0.1';
               }
             },
             {
@@ -101,8 +103,8 @@ module.exports = function(grunt) {
               type: 'input',
               message: 'Database port',
               default: function(answers) {
-                var dialect = config['clever-orm'].db.dialect
-                  , port    = config['clever-orm'].db.port;
+                var dialect = config['clever-orm'].db.options.dialect
+                  , port    = config['clever-orm'].db.options.port;
 
                 if (dialect && dialect !== answers['cleverstackorm.dialect']) {
                   port = false;
@@ -140,6 +142,9 @@ module.exports = function(grunt) {
       },
       ormSeed: {
         cmd: "node modules/clever-orm/bin/seedModels.js " + dbTarget
+      },
+      cleverOrmPostInstall: {
+        cmd: "node modules/clever-orm/bin/postInstall.js " + (verbose ? '-v' : '')
       }
     }
   }, function(grunt) {
@@ -162,23 +167,15 @@ module.exports = function(grunt) {
       grunt.registerTask('db', ['db:orm']);
     }
 
-    // grunt.registerTask('readme', 'Displays helpful information', function () {
-    //     console.log('(Manual) Installation instructions:');
-    //     console.log('1. In the config file for your desired environment (ie. backend/config/local.json), update the clever-orm object with the details for your database.');
-    //     console.log('');
-    //     console.log('2. From your project\'s `backend` folder, run `NODE_ENV=local grunt db`.');
-    //     console.log('The database tables for your modules should now be installed and seeded with data!');
-    // });
-
-    grunt.registerTask('prompt:cleverOrmConfig', ['prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig']);
-    grunt.registerTask('cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function () {
+    grunt.registerTask('prompt:cleverOrmConfig', ['prompt:cleverOrmConfigPrompt', 'cleverOrmCreateConfig', 'exec:cleverOrmPostInstall']);
+    grunt.registerTask('cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function createOrmConfig() {
       var conf    = grunt.config('cleverstackorm')
         , obj     = require(path.resolve(path.join(process.cwd(), 'modules', 'clever-orm', 'config', 'default.json')))
         , env     = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : 'local'
         , file    = path.join(process.cwd(), 'config', env + '.json');
 
       if (fs.existsSync(file)) {
-        obj = _.extend(obj, require(file));
+        obj = underscore.extend(obj, require(file));
       }
 
       obj['clever-orm'] = obj['clever-orm'] || {};

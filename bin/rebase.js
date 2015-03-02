@@ -22,16 +22,6 @@ moduleLdr.on('modulesLoaded', function() {
   debug('Forcing Database to be created! (Note: All your data will disapear!)');
   async.waterfall(
     [
-      function createDatabase(callback) {
-        var query = 'CREATE DATABASE ' + (config['clever-orm'].db.options.dialect === 'mysql' ? 'IF NOT EXISTS ' : '') + config['clever-orm'].db.database;
-
-        sequelize.query(query, { raw: true })
-          .then(function() {
-            callback(null);
-          })
-          .catch(callback);
-      },
-
       function rebaseDatabase(callback) {
         sequelize
           .sync({ force: true })
