@@ -99,7 +99,7 @@ moduleLdr.on('modulesLoaded', function() {
                     }
 
                     required.forEach(function(requiredModels) {
-                      if (typeof requiredModels !== 'array') {
+                      if (!(requiredModels instanceof Array)) {
                         requiredModels = [requiredModels];
                       }
                       
