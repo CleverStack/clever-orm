@@ -10,6 +10,7 @@ module.exports  = {
   destroyInstance : ormLib.model.instance.destroy,
   findAll         : ormLib.model.findAll,
   wrapModel       : ormLib.model.instance.hydrator,
+  setup           : ormLib.model.instance.setup,
   eagerLoad       : ormLib.model.associations.loaders.eager.load,
   afterEagerLoad  : ormLib.model.associations.loaders.eager.afterLoad,
   softDeleteable  : ormLib.model.behaviours.softDeleteable.whereCriteria
