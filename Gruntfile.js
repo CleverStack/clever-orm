@@ -48,7 +48,7 @@ module.exports = function(grunt) {
                   });
                 }
 
-                return true;
+                return env;
               }
             },
             {
@@ -172,7 +172,7 @@ module.exports = function(grunt) {
     grunt.registerTask('cleverOrmCreateConfig', 'Creates a .json config file for database credentials', function createOrmConfig() {
       var conf    = grunt.config('cleverstackorm')
         , obj     = require(path.resolve(path.join(process.cwd(), 'modules', 'clever-orm', 'config', 'default.json')))
-        , env     = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : 'local'
+        , env     = conf.environment.toLowerCase()
         , file    = path.join(process.cwd(), 'config', env + '.json');
 
       if (fs.existsSync(file)) {
