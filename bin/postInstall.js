@@ -1,12 +1,14 @@
 'use strict';
 
-var path       = require('path')
-  , fs         = require('fs')
-  , cp         = require('child_process')
-  , config     = require('config')
-  , dialect    = config['clever-orm'].db.options.dialect
-  , appRoot    = path.resolve(path.join(__dirname, '..', '..', '..'))
-  , verbose    = process.argv.indexOf('-v') !== -1
+var path    = require('path')
+  , fs      = require('fs')
+  , cp      = require('child_process')
+  , config  = require('config')
+  , dialect = config['clever-orm'].db.options.dialect
+  , appRoot = path.resolve(path.join(__dirname, '..', '..', '..'))
+  , pkgPath = path.resolve(path.join(__dirname, '..', 'package.json'))
+  , pkgJson = require(pkgPath)
+  , verbose = process.argv.indexOf('-v') !== -1
   , dbPkg;
 
 switch(dialect) {
@@ -37,6 +39,16 @@ if (!fs.existsSync(path.join(appRoot, 'node_modules', dbPkg))) {
   var proc = cp.spawn('npm', ['i', dbPkg], opts);
 
   proc.on('close', function(code) {
-    process.exit(code);
+    if (code === 0) {
+      pkgJson.dependencies[dbPkg] = '~' + require(path.join(appRoot, 'node_modules', dbPkg, 'package.json')).version;
+      fs.writeFile(pkgPath, JSON.stringify( pkgJson, null, '  '), function(err) {
+        if (err) {
+          console.error(err);
+        }
+        process.exit(code);
+      });
+    } else {
+      process.exit(code);
+    }
   });
 }
