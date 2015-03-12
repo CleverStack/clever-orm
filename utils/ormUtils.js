@@ -1,6 +1,6 @@
 var path     = require('path')
   , ormLib   = require(path.resolve(path.join(__dirname, '..', 'lib')))
-  , model    = ormLib.model
+  , model    = ormLib.model;
 
 module.exports  = {
   find            : model.find,

@@ -33,7 +33,7 @@ module.exports = Module.extend(
     if (!!dbConfig.options.logging || queryLogger.enabled) {
       if (!queryLogger.enabled) {
         debug.enable('cleverstack:queryLog');
-        queryLogger = debug('cleverstack:queryLog')
+        queryLogger = debug('cleverstack:queryLog');
       }
       dbConfig.options.logging = queryLogger;
     }
@@ -72,8 +72,8 @@ module.exports = Module.extend(
   },
 
   parseModelSchema: function(Static) {
-    var parseDebug = this.proxy(function(msg) { 
-        this.debug(Static.modelName + 'Model: ' + msg); 
+    var parseDebug = this.proxy(function(msg) {
+        this.debug(Static.modelName + 'Model: ' + msg);
       })
       , sequelizeConf = { paranoid: false, timestamps: false }
       , fields = {};
@@ -181,13 +181,13 @@ module.exports = Module.extend(
   defineField: function(Static, fields, name) {
     var fieldDefinition = {}
       , columnName      = name
-      , options         = Static.fields[name]
+      , options         = Static.fields[name];
 
     // Allow direct syntax
     if (typeof options !== 'object' || options instanceof Array) {
       options = {
         type: options
-      }
+      };
     }
 
     // Handle array of "Something"

@@ -1,5 +1,3 @@
-'use strict';
-
 var fs         = require('fs')
   , path       = require('path')
   , appRoot    = path.resolve(path.join(__dirname, '..', '..'))
@@ -138,13 +136,13 @@ module.exports = function(grunt) {
     },
     exec: {
       ormRebase: {
-        cmd: "node modules/clever-orm/bin/rebase.js " + dbTarget
+        cmd: 'node modules/clever-orm/bin/rebase.js ' + dbTarget
       },
       ormSeed: {
-        cmd: "node modules/clever-orm/bin/seedModels.js " + dbTarget
+        cmd: 'node modules/clever-orm/bin/seedModels.js ' + dbTarget
       },
       ormPostInstall: {
-        cmd: "node modules/clever-orm/bin/postInstall.js " + (verbose ? '-v' : '')
+        cmd: 'node modules/clever-orm/bin/postInstall.js ' + (verbose ? '-v' : '')
       },
 
     }

@@ -2,6 +2,8 @@ language: node_js
 
 node_js:
   - '0.10'
+  - '0.11'
+  - '0.12'
 
 before_install:
   - npm install -g grunt-cli
@@ -15,7 +17,7 @@ before_script:
   - mysql -e 'create database test_db;'
   - export NODE_ENV=test
   - export NODE_PATH=./lib/:./modules/
-  - node tests/before_travis_test.js
+  - node tests/beforeTravis.js
   - cd testProject
 
 services:

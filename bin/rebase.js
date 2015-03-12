@@ -1,5 +1,3 @@
-'use strict';
-
 var injector    = require('injector')
   , util        = require('util')
   , utils       = require('utils')
@@ -64,7 +62,7 @@ moduleLdr.on('modulesLoaded', function() {
  );
 });
 
-helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] != 'null' ? process.argv[2] : false);
+helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] !== 'null' ? process.argv[2] : false);
 
 // Load
 moduleLdr.loadModules();

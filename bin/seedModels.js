@@ -1,5 +1,3 @@
-'use strict';
-
 var utils       = require('utils')
   , helpers     = utils.helpers
   , async       = require('async')
@@ -69,7 +67,7 @@ moduleLdr.on('modulesLoaded', function() {
               callback(err);
             });
           }
-       )
+       );
       },
       function associateModels(callback) {
         async.forEachSeries(
@@ -142,7 +140,7 @@ moduleLdr.on('modulesLoaded', function() {
                         .then(function() {
                           called++;
 
-                          if (called == assocLength) {
+                          if (called === assocLength) {
                             modelCb(null);
                           }
                         })
@@ -172,7 +170,7 @@ moduleLdr.on('modulesLoaded', function() {
               callback(err);
             });
           }
-       )
+       );
       }
     ],
     function forEachModelTypeComplete(err) {
@@ -190,7 +188,7 @@ moduleLdr.on('modulesLoaded', function() {
  );
 });
 
-helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] != 'null' ? process.argv[2] : false);
+helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] !== 'null' ? process.argv[2] : false);
 
 // Load
 moduleLdr.loadModules();
