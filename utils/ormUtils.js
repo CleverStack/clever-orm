@@ -13,6 +13,5 @@ module.exports  = {
   wrapModel       : model.instance.hydrator,
   setup           : model.instance.setup,
   eagerLoad       : model.associations.loaders.eager.load,
-  afterEagerLoad  : model.associations.loaders.eager.afterLoad,
-  softDeleteable  : model.behaviours.softDeleteable.whereCriteria
+  afterEagerLoad  : model.associations.loaders.eager.afterLoad
 };
