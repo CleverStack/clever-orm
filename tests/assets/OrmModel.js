@@ -20,6 +20,7 @@ module.exports = function(Model) {
       values: ['test']
     },
     buf: Buffer,
+    num: Number,
     bigint: Model.Types.BIGINT,
     bigintLen: Model.Types.BIGINT(11),
     float: Model.Types.FLOAT,
