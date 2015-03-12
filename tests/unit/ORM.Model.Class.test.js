@@ -13,15 +13,13 @@ describe('Object Relational Mapper: (ORM)', function() {
       OrmModel = _OrmModel;
       injector.instance('OrmModel', OrmModel);
       
-      done();
-      // run a sync
-      // injector
-      //   .getInstance('sequelize')
-      //   .sync({force:true})
-      //   .then(function() {
-      //     done();
-      //   })
-      //   .catch(done);
+      injector
+        .getInstance('sequelize')
+        .sync({force:true})
+        .then(function() {
+          done();
+        })
+        .catch(done);
     });
   });
 
