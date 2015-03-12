@@ -1,10 +1,3 @@
-language: node_js
-
-node_js:
-  - '0.10'
-  - '0.11'
-  - '0.12'
-
 before_install:
   - npm install -g grunt-cli
   - npm install -g bower
@@ -15,10 +8,32 @@ before_install:
 
 before_script:
   - mysql -e 'create database test_db;'
-  - export NODE_ENV=test
-  - export NODE_PATH=./lib/:./modules/
   - node tests/beforeTravis.js
   - cd testProject
 
+env:
+  - NODE_ENV=test NODE_PATH=./lib/:./modules/
+
 services:
-  - mysql
+  - mongodb
+
+notifications:
+  email:
+    - cleverstack@github.com
+  irc:
+    - "chat.freenode.net#cleverstack"
+
+language: node_js
+
+node_js:
+  - '0.10'
+  - '0.11'
+  - '0.12'
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - node_modules
