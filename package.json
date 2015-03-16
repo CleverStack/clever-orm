@@ -1,22 +1,37 @@
 {
-  "name":         "clever-orm",
-  "description":  "CleverStack ORM (SQL) Module",
-  "version":      "2.0.3",
-  "main":         "module.js",
+  "name"        : "clever-orm",
+  "description" : "CleverStack ORM (SQL) Module",
+  "version"     : "2.0.3",
+  "license"     : "MIT",
+  "main"        : "module",
   "author": {
-    "name":     "CleverStack",
-    "email":    "admin@cleverstack.io",
-    "web":      "http://cleverstack.io"
+    "name"      : "CleverStack",
+    "email"     : "admin@cleverstack.io",
+    "web"       : "http://cleverstack.io"
   },
   "collaborators": [
     "Richard Gustin <richard.gustin86@gmail.com>"
   ],
   "repository": {
-    "type":     "git",
-    "url":      "https://github.com/CleverStack/clever-orm.git"
+    "type"      : "git",
+    "url"       : "https://github.com/CleverStack/clever-orm.git"
   },
   "bugs": {
-    "url":      "https://github.com/CleverStack/clever-orm/issues"
+    "url"       : "https://github.com/CleverStack/clever-orm/issues"
+  },
+  "scripts": {
+    "test"      : "grunt test:unit"
+  },
+  "engines": {
+    "node"      : ">=0.10 <=0.12",
+    "npm"       : ">=1.4 <=2.5"
+  },
+  "dependencies": {
+    "sequelize"     : "2.0.3"
+  },
+  "devDependencies": {
+    "grunt"         : "~0.4.2",
+    "grunt-prompt"  : "~1.3.0"
   },
   "keywords": [
     "cleverstack",
@@ -32,16 +47,5 @@
     "object",
     "relational",
     "mapper"
-  ],
-  "license":      "MIT",
-  "dependencies": {
-    "sequelize":    "2.0.3"
-  },
-  "devDependencies": {
-    "grunt":        "~0.4.2",
-    "grunt-prompt": "~1.3.0"
-  },
-  "scripts": {
-    "test":     "grunt test:unit"
-  }
+  ]
 }
