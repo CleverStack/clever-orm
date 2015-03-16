@@ -188,7 +188,5 @@ moduleLdr.on('modulesLoaded', function() {
  );
 });
 
-helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] !== 'null' ? process.argv[2] : false);
-
 // Load
-moduleLdr.loadModules();
+moduleLdr.loadModules(process.argv && process.argv[2] !== 'null' ? ['clever-orm', process.argv[2]] : false);

@@ -1,14 +1,14 @@
-var injector    = require('injector')
-  , util        = require('util')
-  , utils       = require('utils')
-  , async       = require('async')
-  , config      = require('config')
-  , path        = require('path')
-  , fs          = require('fs')
-  , debug       = require('debug')('cleverstack:cleverOrm:rebase')
-  , helpers     = utils.helpers
-  , env         = utils.bootstrapEnv()
-  , moduleLdr   = env.moduleLoader;
+var injector  = require('injector')
+  , util      = require('util')
+  , utils     = require('utils')
+  , async     = require('async')
+  , config    = require('config')
+  , path      = require('path')
+  , fs        = require('fs')
+  , debug     = require('debug')('cleverstack:cleverOrm:rebase')
+  , helpers   = utils.helpers
+  , env       = utils.bootstrapEnv()
+  , moduleLdr = env.moduleLoader;
 
 debug('Using configuration:');
 debug(util.inspect(config['clever-orm'].modelAssociations));
@@ -62,7 +62,5 @@ moduleLdr.on('modulesLoaded', function() {
  );
 });
 
-helpers.supportSingleDbModule(env, 'clever-orm', process.argv && process.argv[2] !== 'null' ? process.argv[2] : false);
-
 // Load
-moduleLdr.loadModules();
+moduleLdr.loadModules(process.argv && process.argv[2] !== 'null' ? ['clever-orm', process.argv[2]] : false);
