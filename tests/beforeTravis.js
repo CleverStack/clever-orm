@@ -34,8 +34,7 @@ function createProject() {
 
 function copyOrmModule() {
   return new Promise( function( resolve, reject ) {
-    var pkgJson     = path.join( __dirname, '../', prName, 'package.json' )
-      , fromDir     = path.join( __dirname, '../' )
+    var fromDir     = path.join( __dirname, '../' )
       , toDir       = path.join( __dirname, '../', prName, 'modules', 'clever-orm' );
 
     console.log( 'step #2 - copy clever-orm module in test project - begin\n' );
@@ -93,22 +92,8 @@ function copyOrmModule() {
 
     copyDir( fromDir, toDir );
 
-    var packageJson = require( pkgJson );
-    if ( packageJson.bundledDependencies.indexOf( 'clever-orm' ) === -1 ) {
-      packageJson.bundledDependencies.push( 'clever-orm' );
-      fs.writeFile( pkgJson, JSON.stringify( packageJson, null, '  ' ), function( e ) {
-        if ( !!e ) {
-          console.log( 'Error in step #2 - ' + e + '\n');
-          reject( e );
-        } else {
-          console.log( 'step #2 - completed' );
-          resolve();
-        }
-      });
-    } else {
-      console.log( 'step #2 - completed' );
-      resolve();
-    }
+    console.log( 'step #2 - completed' );
+    resolve();
   });
 }
 
