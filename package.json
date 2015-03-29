@@ -27,7 +27,7 @@
     "npm"       : ">=1.4 <=2.5"
   },
   "dependencies": {
-    "sequelize"     : "2.0.3"
+    "sequelize"     : "2.0.4"
   },
   "devDependencies": {
     "grunt"         : "~0.4.2",
