@@ -1,7 +1,7 @@
-var path     = require('path')
-  , ormLib   = require(path.resolve(path.join(__dirname, '..', 'lib')))
-  , model    = ormLib.model;
+var utils = require('utils')
+  , model = utils.model.orm;
 
+// @todo remove the dependency on this file
 module.exports  = {
   find            : model.find,
   save            : model.instance.save,

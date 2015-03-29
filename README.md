@@ -12,7 +12,7 @@ This CleverStack Module deeply integrates SequelizeJS into CleverStack, to provi
 
 ## Documentation
 
-See [cleverstack.io](http://cleverstack.io/documentation/#backend) for more detailed information on the Node seed or visit the [Getting Started Guide](http://cleverstack.io/getting-started/)
+See [cleverstack.io](http://cleverstack.io/documentation/#backend) for more detailed information on the Node seed or visit the [Getting Started Guide](http://cleverstack.io/getting-started/). For more information about using clever-orm (and models in general) please see the [Models](http://cleverstack.io/documentation/backend/models) Documentation.
 
 ## Install 
 1. From your project folder run `clever install clever-orm`

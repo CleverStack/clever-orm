@@ -1,8 +1,5 @@
-var path       = require('path')
-  , injector   = require('injector')
-  , accessors  = require(path.resolve(path.join(__dirname, 'accessors')))
-  , loaders    = require(path.resolve(path.join(__dirname, 'loaders')))
-  , nestedOps  = require(path.resolve(path.join(__dirname, 'nestedOperations')))
+var injector   = require('injector')
+  , utils      = require('utils')
   , underscore = injector.getInstance('underscore');
 
 function defineAssociations(models) {
@@ -41,23 +38,18 @@ function defineAssociations(models) {
         cleverOrm.debug('%s %s %s %s', sourceModelName, assocType, targetModelName, associationOptions);
         association = cleverOrm.models[sourceModelName][assocType](cleverOrm.models[targetModelName], associationOptions);
 
-        accessors.define(sourceModel, assocType, injector.getInstance(targetModelName + 'Model'), alias, association);
+        utils.model.orm.associations.accessors.define(sourceModel, assocType, injector.getInstance(targetModelName + 'Model'), alias, association);
 
         if (associationOptions.lazy === true) {
-          loaders.lazy.load(sourceModel, assocType, targetModel, alias, association);
+          utils.model.orm.associations.loaders.lazy.load(sourceModel, assocType, targetModel, alias, association);
         }
 
         if (associationOptions.autoHooks !== false) {
-          nestedOps.define(sourceModel, assocType, targetModel, alias, association);
+          utils.model.orm.associations.nestedOperations.define(sourceModel, assocType, targetModel, alias, association);
         }
       });
     });
   });
 }
 
-module.exports = {
-  define           : defineAssociations,
-  accessors        : accessors,
-  loaders          : loaders,
-  nestedOperations : nestedOps
-};
+module.exports = defineAssociations;

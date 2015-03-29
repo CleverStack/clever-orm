@@ -7,8 +7,32 @@ var path       = require('path')
   , create     = require(path.resolve(path.join(__dirname, 'create')))
   , accessor   = require(path.resolve(path.join(__dirname, 'default')));
 
+var accessorTypes = {
+  hasOne: {
+    getSingular    : get,
+    setSingular    : set,
+    createSingular : create
+  },
+  belongsTo: {
+    getSingular    : get,
+    setSingular    : set,
+    createSingular : create
+  },
+  hasMany: {
+    getPlural      : get,
+    setPlural      : set,
+    createSingular : create,
+    removeSingular : get,
+    removePlural   : get,
+    addSingular    : accessor,
+    addPlural      : accessor,
+    hasPlural      : accessor,
+    hasSingular    : accessor
+  }
+};
+
 function defineAssociationAccessors(sourceModel, assocType, targetModel, alias, association) {
-  var accessors   = this[assocType]
+  var accessors   = accessorTypes[assocType]
     , singular    = inflect.singularize(alias)
     , plural      = inflect.pluralize(alias);
 
@@ -57,27 +81,4 @@ function defineAssociationAccessors(sourceModel, assocType, targetModel, alias, 
   });
 }
 
-module.exports = {
-  define: defineAssociationAccessors,
-  hasOne: {
-    getSingular    : get,
-    setSingular    : set,
-    createSingular : create
-  },
-  belongsTo: {
-    getSingular    : get,
-    setSingular    : set,
-    createSingular : create
-  },
-  hasMany: {
-    getPlural      : get,
-    setPlural      : set,
-    createSingular : create,
-    removeSingular : get,
-    removePlural   : get,
-    addSingular    : accessor,
-    addPlural      : accessor,
-    hasPlural      : accessor,
-    hasSingular    : accessor
-  }
-};
+module.exports = defineAssociationAccessors;

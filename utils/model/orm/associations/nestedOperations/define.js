@@ -1,5 +1,4 @@
-var path       = require('path')
-  , injector   = require('injector')
+var injector   = require('injector')
   , util       = require('util')
   , moduleLdr  = injector.getInstance('moduleLoader')
   , debug      = require('debug')('cleverstack:models:associations')
@@ -28,19 +27,4 @@ function defineNestedOperations(sourceModel, assocType, targetModel, alias, asso
   }
 }
 
-module.exports = {
-  define: defineNestedOperations,
-  hasOne: {
-    beforeCreate : require(path.resolve(path.join(__dirname, 'hasOne', 'beforeCreate'))),
-    beforeUpdate : require(path.resolve(path.join(__dirname, 'hasOne', 'beforeUpdate'))),
-  },
-  hasMany: {
-    afterCreate  : require(path.resolve(path.join(__dirname, 'hasMany', 'afterCreate'))),
-  },
-  belongsTo : {
-    beforeCreate : require(path.resolve(path.join(__dirname, 'belongsTo', 'beforeCreate'))),
-    afterCreate  : require(path.resolve(path.join(__dirname, 'belongsTo', 'afterCreate'))),
-    beforeUpdate : require(path.resolve(path.join(__dirname, 'belongsTo', 'beforeUpdate'))),
-    afterUpdate  : require(path.resolve(path.join(__dirname, 'belongsTo', 'afterUpdate')))
-  }
-};
+module.exports = defineNestedOperations;

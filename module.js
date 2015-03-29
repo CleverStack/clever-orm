@@ -1,11 +1,11 @@
 var injector   = require('injector')
   , Sequelize  = require('sequelize')
-  , path       = require('path')
   , debug      = require('debug')
+  , utils      = require('utils')
   , Module     = injector.getInstance('Module')
   , Model      = injector.getInstance('Model')
   , inflect    = injector.getInstance('inflect')
-  , ormLib     = require(path.resolve(path.join(__dirname, 'lib')));
+  , ormLib     = utils.model.orm;
 
 module.exports = Module.extend(
 {
@@ -67,7 +67,7 @@ module.exports = Module.extend(
    * @return {undefined}
    */
   modulesLoaded: function() {
-    ormLib.model.associations.define.apply(this, [this.config.modelAssociations]);
+    ormLib.associations.define.apply(this, [this.config.modelAssociations]);
     this.emit('ready');
   },
 
