@@ -14,7 +14,7 @@ module.exports = function findTargetModelBeforeUpdateSourceModel(as, association
     , targetPK    = targetModel.primaryKey
     , nestedQuery = !!valueAs && !isTargetPk ? {where:{}} : false;
 
-  if (entity === undefined && valueAs && !isTargetPk && (typeof valueAs !== 'object' || valueAs[targetPK] === undefined)) {
+  if (entity === undefined && valueAs && !isTargetPk && (typeof valueAs !== 'object' || valueAs[targetPK] !== undefined)) {
     nestedQuery.where.label = valueAs;
 
     targetModel
