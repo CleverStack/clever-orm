@@ -67,7 +67,7 @@ function defineAssociationAccessors(sourceModel, assocType, targetModel, alias, 
             
             if (where.entity) {
               where = where.entity;
-            } else if (where instanceof Array && where[0].entity) {
+            } else if (where instanceof Array && where.length && where[0].entity) {
               where = where.map(function(entity) {
                 return entity.entity;
               });

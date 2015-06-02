@@ -9,13 +9,13 @@ var underscore = require('underscore');
  * @param  {Function} callback     the callback to allow SourceModel.update() to continue execution
  * @return {Promise}               optionally return the promise for use in spread()
  */
-module.exports = function createTargetModelBeforeSourceModel(as, association, targetModel, values, queryOptions, callback) {
+module.exports = function createTargetModelBeforeSourceModel(as, association, targetModel, instance, values, queryOptions, callback) {
   try {
     if (values[as] !== undefined && values[as] !== null && values[as].entity === undefined && typeof values[as] === 'object') {
       var data = underscore.extend(
-        typeof values[as] === 'object' ? underscore.clone(values[as]) : { id: values[as] },
-        underscore.pick(values, association.options.foreignKey)
+        typeof values[as] === 'object' ? underscore.clone(values[as]) : { id: values[as] }
        );
+      data[association.options.foreignKey] = instance[targetModel.primaryKey]
 
       targetModel
         .create(data, queryOptions)

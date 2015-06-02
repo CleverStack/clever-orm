@@ -1,4 +1,5 @@
 var underscore = require('underscore');
+
 /**
  * Before updating any SourceModel that has a valid "hasOne" association with any other TargetModel, 
  * automatically update the relating model if we haven't been specifically disabled.
@@ -17,7 +18,7 @@ module.exports = function updateTargetModelBeforeSourceModel(as, association, ta
     , nestedQuery = {where:{}}
     , nestedData  = valueAs ? underscore.clone(values[as]) : false;
 
-  if (!isSelfRef && entity === undefined && nestedData !== false && (typeof valueAs !== 'object' || valueAs[targetPK] === undefined)) {
+  if (!isSelfRef && entity === undefined && nestedData !== false && (typeof valueAs !== 'object' || valueAs[targetPK] !== undefined)) {
     nestedQuery.where[targetPK] = queryOptions.where[sourcePk];
     if (queryOptions.transaction) {
       nestedQuery.transaction = queryOptions.transaction;
