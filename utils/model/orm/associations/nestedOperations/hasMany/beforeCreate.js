@@ -22,12 +22,15 @@ module.exports     = function findTargetModelsBeforeCreateSourceModel(as, associ
 
   if (!!doubleLinked && !isSelfRef && !!valuesAs && valuesAs.length && valuesAs[0][targetPK] === undefined) {
     var targetIds = underscore.map(valuesAs, function(value) {
-      return value[targetPK];
+      return typeof value === 'object' ? value[targetPK] : value;
     });
 
     targetModel
       .findAll({where: {id: {in: targetIds}}}, queryOptions)
-      .then(function(targetModels) {
+      .then(function(targets) {
+        var targetModels = underscore.map(targets, function(target) {
+          return target.entity;
+        });
         values[as] = targetModels;
         callback(null, values);
       })
