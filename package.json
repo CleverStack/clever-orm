@@ -1,7 +1,7 @@
 {
   "name"        : "clever-orm",
   "description" : "CleverStack ORM (SQL) Module",
-  "version"     : "2.0.7",
+  "version"     : "2.0.8",
   "license"     : "MIT",
   "main"        : "module",
   "author": {
