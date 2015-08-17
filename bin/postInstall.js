@@ -4,6 +4,8 @@ var path    = require('path')
   , fs      = require('fs')
   , cp      = require('child_process')
   , config  = require('config')
+  , os      = require('os')
+  , isWin   = /^win32/.test(os.platform());
   , dialect = config['clever-orm'].db.options.dialect
   , appRoot = path.resolve(path.join(__dirname, '..', '..', '..'))
   , pkgPath = path.resolve(path.join(__dirname, '..', 'package.json'))
@@ -36,7 +38,7 @@ if (!fs.existsSync(path.join(appRoot, 'node_modules', dbPkg))) {
     opts.stdio = 'inherit';
   }
 
-  var proc = cp.spawn('npm', ['i', dbPkg], opts);
+  var proc = cp.spawn(!isWin ? 'npm' :'npm.CMD', ['i', dbPkg], opts);
 
   proc.on('close', function(code) {
     if (code === 0) {
