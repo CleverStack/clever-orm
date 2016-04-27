@@ -28,14 +28,18 @@ module.exports    = function createTargetModelsAfterSourceModel(as, association,
       async.map(
         valuesAs,
         function createNestedHasManyModel(nestedModelData, done) {
-          nestedModelData[association.foreignKey || association.identifier] = instance[sourcePk];
+          if (!nestedModelData[targetPK]) {
+            nestedModelData[association.foreignKey || association.identifier] = instance[sourcePk];
 
-          targetModel
-            .create(nestedModelData, queryOptions)
-            .then(function(targetInstance) {
-              done(null, targetInstance);
-            })
-            .catch(done);
+            targetModel
+              .create(nestedModelData, queryOptions)
+              .then(function(targetInstance) {
+                done(null, targetInstance);
+              })
+              .catch(done);
+          } else {
+            done(null, nestedModelData);
+          }
         },
         function createdNestedHasManyModels(err, associations) {
           if (!err) {
