@@ -7,7 +7,7 @@ function defineAssociations(models) {
   var cleverOrm  = this
     , modelNames = Object.keys(models);
 
-  if (cleverOrm.debug.enabled) {
+  if (cleverOrm.debug.enabled && modelNames.length) {
     cleverOrm.debug('Defining Assocations for ' + modelNames.join(', ') + '...');
   }
 
